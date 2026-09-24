@@ -25,7 +25,9 @@ Its analysis engine has been benchmarked against the R package QCA 3.25.5 on 241
 
 ## Running SaNaSoft
 
-SaNaSoft is a single file, `index.html`. Open it in any modern browser (Chrome, Edge, Firefox, Safari). It needs no installation and no server.
+SaNaSoft is available online at **https://samssabraznawaz.github.io/sanasoft/**.
+
+It is a single file, `index.html`. Open it in any modern browser (Chrome, Edge, Firefox, Safari). It needs no installation and no server.
 
 It loads optional resources from the internet: web fonts from Google Fonts, SheetJS from cdnjs (for Excel files) and docx from jsDelivr (for Word reports, loaded only when a report is requested). Without an internet connection the analysis still works, using system fonts and accepting CSV files; the Word and Excel downloads need a connection the first time.
 
@@ -47,7 +49,7 @@ To use your own domain name (for example `sanasoft.org`), buy it from any regist
 
 ## Citing SaNaSoft
 
-Samsudeen, S.N. and Ghazanfar, A.A. (2026), “SaNaSoft: Guided fsQCA for PLS-SEM latent variable scores”, Version 1.2, available at: https://claude.ai/artifact/UZhqVjLjtwhis75rAuUbnS
+Samsudeen, S.N. and Ghazanfar, A.A. (2026), “SaNaSoft: Guided fsQCA for PLS-SEM latent variable scores”, Version 1.2, available at: https://samssabraznawaz.github.io/sanasoft/
 
 SaNaSoft shows this citation on its first page in six reference styles (APA 7th, Harvard, Emerald, Chicago author-date, IEEE and Vancouver), and adds it automatically to the methods paragraph, the Word report, the Excel workbook and the text report in the style the user selects. See also `CITATION.cff`. A draft software paper is in `paper/`.
 
@@ -55,9 +57,9 @@ SaNaSoft shows this citation on its first page in six reference styles (APA 7th,
 
 The link used in every citation is set in one line near the top of the script in `index.html`:
 
-    const SOFTWARE_URL='https://claude.ai/artifact/UZhqVjLjtwhis75rAuUbnS';
+    const SOFTWARE_URL='https://samssabraznawaz.github.io/sanasoft/';
 
-Replace it with the new address when SaNaSoft moves to its own website (for example GitHub Pages), and update `CITATION.cff` and the citation above to match. The version number is set in `APP_VERSION` on the line above it.
+SaNaSoft is hosted at https://samssabraznawaz.github.io/sanasoft/. If the address changes (for example to a custom domain), replace it in this line and update `CITATION.cff` and the citation above to match. The version number is set in `APP_VERSION` on the line above it.
 
 ## Licence
 
