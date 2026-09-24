@@ -1,0 +1,1497 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SaNaSoft: guided fsQCA for PLS-SEM latent variable scores (developed by Prof. S. Sabraz Nawaz and Prof. Ghazanfar Ali)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#F5F4EF; --surface:#FFFFFF; --sunk:#F0EEE6; --ink:#141413; --muted:#6B6A63; --line:#E5E2D8;
+  --in:#B8552F; --in-soft:#F7E7DF; --out:#46679A; --out-soft:#E3EAF4;
+  --warn:#8A5A00; --warn-soft:#F7EBD3; --ok:#1F6B45; --ok-soft:#DDEFE4;
+  --green:#006C35; --green-deep:#00552A; --on-green:#FFFFFF;
+  --serif:'Newsreader', Georgia, 'Times New Roman', serif;
+  --sans:'Public Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#262624; --surface:#30302E; --sunk:#1F1F1D; --ink:#F2F1EC; --muted:#A8A69D; --line:#44433F;
+    --in:#E08A67; --in-soft:#4A3128; --out:#9DB6E0; --out-soft:#2B3445;
+    --warn:#E6B865; --warn-soft:#3A2F1B; --ok:#7FD0A2; --ok-soft:#1E3A2B; --green:#0B5E34; --green-deep:#084A29; --on-green:#FFFFFF; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#262624; --surface:#30302E; --sunk:#1F1F1D; --ink:#F2F1EC; --muted:#A8A69D; --line:#44433F;
+  --in:#E08A67; --in-soft:#4A3128; --out:#9DB6E0; --out-soft:#2B3445;
+  --warn:#E6B865; --warn-soft:#3A2F1B; --ok:#7FD0A2; --ok-soft:#1E3A2B; --green:#0B5E34; --green-deep:#084A29; --on-green:#FFFFFF; color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;line-height:1.2}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--in);outline-offset:2px}
+.num-t{font-variant-numeric:tabular-nums}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:18px 28px;background:var(--green);color:var(--on-green)}
+.top .brand h1{color:var(--on-green)}
+.top .brand p{color:rgba(255,255,255,.82)}
+.top .brand p.dev{color:var(--on-green)}
+.top svg rect{stroke:rgba(255,255,255,.5)}
+.top svg path{stroke:#FFFFFF}
+.top svg circle{fill:#F0B08F}
+.top .btn{background:transparent;border-color:rgba(255,255,255,.65);color:var(--on-green)}
+.top .btn:hover{background:rgba(255,255,255,.14)}
+.top .proto.ok{background:rgba(255,255,255,.14);color:var(--on-green)}
+.themepick{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:rgba(255,255,255,.85)}
+.themepick select{background:var(--green-deep);color:var(--on-green);border:1px solid rgba(255,255,255,.5);border-radius:6px;padding:4px 8px;font-size:13px}
+.brand{display:flex;align-items:center;gap:14px}
+.brand h1{font-size:21px;font-weight:700;letter-spacing:-.01em}
+.brand p{margin:0;color:var(--muted);font-size:13.5px}
+.brand p.dev{color:var(--ink);font-weight:600;font-size:13px;margin-top:2px}
+.citebox{border:1px solid var(--line);border-radius:10px;padding:14px 18px;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.citebox .solhead{width:100%}
+.citetext{margin:0;font-family:var(--serif);font-size:16px;line-height:1.55;overflow-wrap:anywhere}
+.reflist{font-family:var(--serif);font-size:15px;line-height:1.55}
+.reflist p{margin:0 0 6px;padding-left:28px;text-indent:-28px;overflow-wrap:anywhere}
+.credit{font-size:14px;color:var(--muted);margin:0}
+.proto{font-size:13px;color:var(--warn);background:var(--warn-soft);padding:6px 12px;border-radius:999px;max-width:100%;text-decoration:none}
+.proto.ok{color:var(--ok);background:var(--ok-soft)}
+.proto.ok:hover{text-decoration:underline}
+
+.layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:28px;max-width:1320px;margin:0 auto;padding:28px}
+.rail{display:flex;flex-direction:column;gap:2px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 20px);align-self:start;background:var(--green);border-radius:14px;padding:10px}
+.stepbtn{display:flex;align-items:center;gap:12px;text-align:left;background:none;border:0;padding:10px 12px;border-radius:8px;cursor:pointer;color:rgba(255,255,255,.82);font-weight:500}
+.stepbtn .n{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:13px;border:1.5px solid rgba(255,255,255,.5);font-variant-numeric:tabular-nums}
+.stepbtn:hover:not(:disabled){background:rgba(255,255,255,.13);color:#FFFFFF}
+.stepbtn.done .n{background:rgba(255,255,255,.22);border-color:transparent;color:#FFFFFF}
+.stepbtn.cur{color:var(--green-deep);background:#FFFFFF;font-weight:600}
+.stepbtn.cur .n{background:var(--green);border-color:var(--green);color:#FFFFFF}
+.stepbtn:disabled{opacity:.5;cursor:not-allowed}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:28px 30px}
+.phead{margin-bottom:22px}
+.phead .pn{color:var(--muted);font-size:13.5px}
+.phead h2{font-size:27px;font-weight:700;letter-spacing:-.015em;margin-top:2px}
+.pgrid{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:32px;align-items:start}
+.pcontent{min-width:0;display:flex;flex-direction:column;gap:22px}
+.guide{font-family:var(--serif);font-size:16.5px;line-height:1.6;border-left:3px solid var(--in-soft);padding:2px 0 2px 20px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 20px)}
+.guide h3{font-family:var(--sans);font-size:14px;font-weight:600;margin:18px 0 4px;color:var(--ink)}
+.guide h3:first-child{margin-top:0}
+.guide p{margin:0 0 8px}
+.guide em{color:var(--muted)}
+.pnav{display:flex;justify-content:space-between;gap:12px;margin-top:30px;padding-top:20px;border-top:1px solid var(--line)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:8px;padding:9px 16px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:600;font-size:14.5px;text-decoration:none}
+.btn:hover{background:var(--sunk)}
+.btn.primary{background:var(--in);border-color:var(--in);color:#fff}
+.btn.primary:hover{filter:brightness(1.08);background:var(--in)}
+:root[data-theme="dark"] .btn.primary{color:#1F1F1D}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn.primary{color:#1F1F1D}}
+.btn.ghost{background:none;border-color:transparent}
+.btn.small{padding:5px 11px;font-size:13.5px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+.drop{border:2px dashed var(--line);border-radius:12px;padding:34px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
+.drop.over{border-color:var(--in);background:var(--in-soft)}
+.drop .dt{font-size:18px;font-weight:600;margin:0}
+.drop .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}
+.muted{color:var(--muted)}
+.note{margin:0;font-size:14px;color:var(--muted)}
+.callout{padding:12px 16px;border-radius:8px;font-size:14.5px}
+.callout.warn{background:var(--warn-soft);color:var(--warn)}
+.callout.ok{background:var(--ok-soft);color:var(--ok)}
+.callout.info{background:var(--in-soft);color:var(--ink)}
+
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-weight:600;background:var(--sunk);font-size:13px;color:var(--muted)}
+tr:last-child td{border-bottom:0}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+td.c,th.c{text-align:center}
+tr.faded td{color:var(--muted);opacity:.65}
+tr.sel td{background:var(--in-soft)}
+.inp{width:74px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);font-variant-numeric:tabular-nums}
+.inp.wide{width:100%}
+.inp.bad{border-color:var(--out);background:var(--out-soft)}
+.field{display:flex;flex-direction:column;gap:4px;font-size:13.5px;font-weight:600}
+.field span{color:var(--muted);font-weight:500}
+.fields{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end}
+.sub{font-size:17px;font-weight:600}
+.subblock{display:flex;flex-direction:column;gap:12px}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;border:1.5px solid var(--line);cursor:pointer;font-weight:600;font-size:14px;user-select:none}
+.chip input{position:absolute;opacity:0;pointer-events:none}
+.chip.on{border-color:var(--in);background:var(--in-soft);color:var(--in)}
+.chip.outc.on{border-color:var(--ink);background:var(--ink);color:var(--surface)}
+.chip.dis{opacity:.4;cursor:not-allowed}
+
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{border:0;background:none;padding:4px 11px;cursor:pointer;font-size:13.5px;font-weight:500;color:var(--muted)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button.on[data-v="1"]{background:var(--in-soft);color:var(--in);font-weight:600}
+.seg button.on[data-v="0"]{background:var(--out-soft);color:var(--out);font-weight:600}
+.seg button.on[data-v="-"]{background:var(--sunk);color:var(--ink);font-weight:600}
+
+.outbtn{min-width:36px;padding:3px 8px;border-radius:6px;border:1px solid var(--line);background:none;cursor:pointer;font-weight:700;font-variant-numeric:tabular-nums}
+.outbtn.one{background:var(--in);border-color:var(--in);color:#fff}
+.outbtn.zero{color:var(--muted)}
+.outbtn.ovr{box-shadow:0 0 0 2px var(--warn)}
+.bit1{color:var(--in);font-weight:700}
+.bit0{color:var(--out)}
+
+.curvebox{border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.curvebox svg{width:100%;height:auto;display:block}
+.curvehead{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline}
+.stats{display:flex;gap:22px;flex-wrap:wrap;font-size:13.5px;color:var(--muted)}
+.stats b{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:600}
+
+.chart td.c{padding:6px 14px}
+.chart .symrow td:first-child{font-weight:600}
+.chart tr.metric td{font-variant-numeric:tabular-nums;color:var(--muted)}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:13.5px;color:var(--muted);align-items:center}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.sym{vertical-align:middle}
+.methods{font-family:var(--serif);font-size:16px;line-height:1.65;background:var(--sunk);border-radius:10px;padding:16px 20px;margin:0}
+.solhead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.solnote{font-size:14px;color:var(--muted);margin:0}
+.flip{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px}
+.flip b{font-size:15px}
+.toggle{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:14.5px}
+.toggle input{width:17px;height:17px;accent-color:var(--in)}
+
+#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 24px);transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--surface);padding:10px 18px;border-radius:8px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:20}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#modal{position:fixed;inset:0;background:rgba(10,15,16,.55);display:none;place-items:center;z-index:30;padding:20px}
+#modal.show{display:grid}
+#modal .box{background:var(--surface);border-radius:12px;padding:20px;width:min(720px,100%);display:flex;flex-direction:column;gap:12px}
+#modal textarea{width:100%;height:300px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg);color:var(--ink)}
+
+.term{border-bottom:1.5px dotted currentColor;cursor:help;position:relative;text-decoration:none}
+.term:hover::after,.term:focus::after{content:attr(data-tip);position:absolute;left:0;top:calc(100% + 6px);width:max-content;max-width:260px;background:var(--ink);color:var(--surface);padding:8px 11px;border-radius:7px;font:400 13px/1.45 var(--sans);letter-spacing:0;text-transform:none;white-space:normal;text-align:left;z-index:15;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.todo{background:var(--in-soft);border-radius:10px;padding:14px 18px;display:flex;flex-direction:column;gap:6px}
+.todo-h{font-weight:700;font-size:15px;color:var(--in)}
+.todo p{margin:0;font-size:15px}
+.plan{border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+.plan-h{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;font-size:16px}
+.plan-n{font-size:13px;font-weight:600;color:var(--in);background:var(--in-soft);padding:2px 9px;border-radius:999px}
+.plan-f,.plan-w{margin:0;font-size:14.5px}
+.plan-w{color:var(--muted)}
+.plan .row,.subblock .row{display:flex;gap:8px;flex-wrap:wrap}
+.arrowcell{display:flex;flex-direction:column;gap:6px;white-space:normal;min-width:220px}
+.arrowcell .note{white-space:normal}
+.chip.small{padding:4px 11px;font-size:13px}
+.plain{font-family:var(--serif);font-size:16.5px;line-height:1.6}
+.plain p{margin:0 0 10px}
+details.adv{border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+details.adv summary{cursor:pointer;font-weight:600}
+details.adv[open] summary{margin-bottom:12px}
+.navr{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end}
+.topr{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.modepick{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.modeopt{display:flex;flex-direction:column;gap:3px;border:1.5px solid var(--line);border-radius:10px;padding:12px 16px;cursor:pointer}
+.modeopt input{position:absolute;opacity:0;pointer-events:none}
+.modeopt span{font-size:13.5px;color:var(--muted)}
+.modeopt.on{border-color:var(--in);background:var(--in-soft)}
+.modeopt:focus-within{outline:2px solid var(--in);outline-offset:2px}
+.exportgrid{display:flex;flex-wrap:wrap;gap:8px}
+@media (max-width:1080px){
+  .pgrid{grid-template-columns:minmax(0,1fr)}
+  .guide{position:static;order:-1;border-left:0;border-top:3px solid var(--in-soft);padding:14px 0 0}
+}
+@media (max-width:820px){
+  .layout{grid-template-columns:minmax(0,1fr);padding:16px;gap:16px}
+  .rail{position:static;flex-direction:row;overflow-x:auto;gap:4px;padding-bottom:4px}
+  .stepbtn{flex:none;padding:8px 10px}
+  .stepbtn .t{display:none}
+  .stepbtn.cur .t{display:inline}
+  .panel{padding:20px 18px}
+  .top{padding:14px 16px}
+  .phead h2{font-size:23px}
+}
+@media (prefers-reduced-motion: reduce){ *{transition:none!important} }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">
+      <rect x="1" y="1" width="38" height="38" rx="9" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+      <path d="M6 32 C 16 32, 15 20, 20 20 S 24 8, 34 8" fill="none" stroke="var(--in)" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="20" cy="20" r="3" fill="var(--out)"/>
+    </svg>
+    <div><h1>SaNaSoft</h1><p>Guided fuzzy-set QCA for PLS-SEM latent variable scores</p><p class="dev">Developed by Prof. S. Sabraz Nawaz and Prof. Ghazanfar Ali</p></div>
+  </div>
+  <div class="topr"><label class="themepick">Theme<select id="theme" aria-label="Colour theme"><option value="light">Light</option><option value="dark">Dark</option><option value="auto">Match device</option></select></label><button class="btn small" id="saveproj" hidden>Save project</button><a class="proto ok" href="https://claude.ai/artifact/TKGZjhbKJs7bXjW8hHDChv" target="_blank" rel="noopener">Validated against R QCA 3.25.5 on 241 benchmark cases. Read the report</a></div>
+</header>
+<div class="layout">
+  <nav class="rail" id="rail" aria-label="Analysis steps"></nav>
+  <main id="main"></main>
+</div>
+<div id="toast" role="status"></div>
+<div id="modal"><div class="box"><div class="sub">Copy this text</div><p class="note">Select all and copy, then paste into Excel, Word or a text file.</p><textarea id="modaltext" readonly></textarea><div><button class="btn" id="modalclose">Close</button></div></div></div>
+
+<script>
+// ===== ENGINE START =====
+function calibrateValue(x, full, cross, non, L){
+  if(!Number.isFinite(x)) return NaN;
+  L=L||3; let lo;
+  if(full>non){ lo = x>=cross ? (x-cross)*L/(full-cross) : (x-cross)*L/(cross-non); }
+  else { lo = x<=cross ? (cross-x)*L/(cross-full) : (cross-x)*L/(non-cross); }
+  return 1/(1+Math.exp(-lo));
+}
+function validAnchors(a){
+  return a && [a.full,a.cross,a.non].every(Number.isFinite) &&
+    ((a.full>a.cross && a.cross>a.non) || (a.full<a.cross && a.cross<a.non));
+}
+function necessity(X,Y){
+  let sxy=0,sx=0,sy=0,snx=0,snm=0;
+  for(let i=0;i<X.length;i++){ const m=Math.min(X[i],Y[i]); sxy+=m; sx+=X[i]; sy+=Y[i]; snx+=1-X[i]; snm+=1-m; }
+  return {cons:sxy/sy, cov:sxy/sx, ron:snx/snm};
+}
+function rowStr(idx,k){ let s=''; for(let j=0;j<k;j++) s+=(idx>>(k-1-j))&1; return s; }
+function termMembership(term, conds){
+  const n=conds[0].length, out=new Array(n);
+  for(let i=0;i<n;i++){
+    let m=1;
+    for(let j=0;j<term.length;j++){ const t=term[j]; if(t==='-') continue; const v=t==='1'?conds[j][i]:1-conds[j][i]; if(v<m) m=v; }
+    out[i]=m;
+  }
+  return out;
+}
+function fitStats(M,Y){
+  let smy=0,sm=0,sy=0,smyny=0;
+  for(let i=0;i<M.length;i++){ const my=Math.min(M[i],Y[i]); smy+=my; sm+=M[i]; sy+=Y[i]; smyny+=Math.min(my,1-Y[i]); }
+  return {incl:smy/sm, cov:smy/sy, pri:(smy-smyny)/(sm-smyny)};
+}
+function truthTable(conds, Y){
+  const k=conds.length, n=Y.length, R=1<<k, counts=new Array(R).fill(0);
+  let ambiguous=0;
+  for(let i=0;i<n;i++){
+    let idx=0, amb=false;
+    for(let j=0;j<k;j++){ const v=conds[j][i]; if(v===0.5) amb=true; idx=(idx<<1)|(v>0.5?1:0); }
+    if(amb) ambiguous++; else counts[idx]++;
+  }
+  const rows=[];
+  for(let r=0;r<R;r++){
+    const str=rowStr(r,k);
+    let st={incl:NaN,pri:NaN};
+    if(counts[r]>0) st=fitStats(termMembership(str,conds),Y);
+    rows.push({idx:r,str,n:counts[r],incl:st.incl,pri:st.pri});
+  }
+  return {rows, ambiguous};
+}
+function combineTerms(a,b){
+  let diff=-1;
+  for(let i=0;i<a.length;i++){
+    if(a[i]!==b[i]){ if(a[i]==='-'||b[i]==='-') return null; if(diff>=0) return null; diff=i; }
+  }
+  if(diff<0) return null;
+  return a.slice(0,diff)+'-'+a.slice(diff+1);
+}
+function primeImplicants(minterms){
+  let cur=[...new Set(minterms)];
+  const P=new Set();
+  while(cur.length){
+    const used=new Set(), next=new Set();
+    for(let i=0;i<cur.length;i++) for(let j=i+1;j<cur.length;j++){
+      const c=combineTerms(cur[i],cur[j]);
+      if(c){ used.add(cur[i]); used.add(cur[j]); next.add(c); }
+    }
+    cur.forEach(t=>{ if(!used.has(t)) P.add(t); });
+    cur=[...next];
+  }
+  return [...P];
+}
+function covers(t,m){ for(let i=0;i<t.length;i++){ if(t[i]!=='-' && t[i]!==m[i]) return false; } return true; }
+function subsumes(p,c){ for(let j=0;j<p.length;j++){ if(p[j]!=='-' && p[j]!==c[j]) return false; } return true; }
+function lits(t){ let n=0; for(const ch of t) if(ch!=='-') n++; return n; }
+function totalLits(model){ return model.reduce((s,t)=>s+lits(t),0); }
+function minimalModels(P, targets, cap){
+  // Finds every cover of the target rows that uses the smallest possible number of prime implicants,
+  // matching R QCA's default (all minimal models). Models are ordered by total number of literals.
+  cap=cap||500;
+  const pis=P.filter(p=>targets.some(m=>covers(p,m)));
+  const cov=new Map(pis.map(p=>[p,new Set(targets.filter(m=>covers(p,m)))]));
+  const byRow=new Map(targets.map(m=>[m,pis.filter(p=>cov.get(p).has(m))]));
+  const ess=new Set(); for(const m of targets){ const c=byRow.get(m); if(c.length===1) ess.add(c[0]); }
+  const essArr=[...ess];
+  const rem0=targets.filter(m=>!essArr.some(p=>cov.get(p).has(m)));
+  if(!rem0.length) return {models:[essArr], ambiguous:false, capped:false};
+  const found=new Map(); let capped=false, work=0; const LIMIT=3e6;
+  function dfs(chosen, uncovered, size){
+    if(found.size>=cap||work>LIMIT){ capped=true; return; }
+    work++;
+    if(!uncovered.length){ const k=[...chosen].sort().join('|'); if(!found.has(k)) found.set(k,[...chosen]); return; }
+    if(chosen.length>=size) return;
+    // lower bound: need at least ceil(uncovered / largest remaining cover) more terms
+    let best=null;
+    for(const m of uncovered){ const c=byRow.get(m).filter(p=>!ess.has(p)); if(!best||c.length<best.c.length) best={m,c}; if(best.c.length<=1) break; }
+    for(const p of best.c){ if(chosen.includes(p)) continue; chosen.push(p); dfs(chosen, uncovered.filter(m=>!cov.get(p).has(m)), size); chosen.pop(); if(found.size>=cap||work>LIMIT){ capped=true; return; } }
+  }
+  for(let size=1; size<=pis.length && !found.size; size++){ dfs([], rem0, size); if(work>LIMIT) break; }
+  let models=[...found.values()].map(f=>[...essArr,...f]);
+  if(!models.length) models=[pis];
+  models.sort((a,b)=>(totalLits(a)-totalLits(b)) || (a.slice().sort().join('|')<b.slice().sort().join('|')?-1:1));
+  return {models, ambiguous:models.length>1, capped};
+}
+function describeSolution(terms, conds, Y){
+  if(!terms.length) return {terms:[], sol:{incl:NaN,cov:NaN}};
+  const Ms=terms.map(t=>termMembership(t,conds));
+  const stats=terms.map((t,i)=>Object.assign({term:t}, fitStats(Ms[i],Y)));
+  const n=Y.length, sy=Y.reduce((a,b)=>a+b,0);
+  const maxOf=(list)=>{ const S=new Array(n).fill(0); for(const M of list) for(let i=0;i<n;i++) if(M[i]>S[i]) S[i]=M[i]; return S; };
+  const S=maxOf(Ms), sol=fitStats(S,Y);
+  stats.forEach((s,i)=>{
+    const So=maxOf(Ms.filter((_,j)=>j!==i));
+    let c=0; for(let q=0;q<n;q++) c+=Math.min(So[q],Y[q]);
+    s.ucov=sol.cov - c/sy;
+  });
+  stats.sort((a,b)=>b.cov-a.cov);
+  return {terms:stats, sol};
+}
+function expandTerm(t){ let out=['']; for(const ch of t){ out = ch==='-' ? out.flatMap(x=>[x+'0',x+'1']) : out.map(x=>x+ch); } return out; }
+function intermediateTerms(C, P, dirExp){
+  // Same procedure as R QCA (Dusa): for every complex term c and every parsimonious term p contained in it,
+  // drop from c the literals (absent from p) that contradict the directional expectation; keep the rest.
+  const terms=[];
+  for(const c of C){
+    const subs=P.filter(p=>subsumes(p,c));
+    if(!subs.length){ terms.push(c); continue; }
+    for(const p of subs){
+      let t=''; for(let j=0;j<c.length;j++){ const e=dirExp[j]; t += (p[j]==='-' && c[j]!=='-' && e!=='-' && e!==c[j]) ? '-' : c[j]; }
+      terms.push(t);
+    }
+  }
+  return [...new Set(terms)];
+}
+function easyRemainders(pos, remd, P, dirExp, C){
+  const cells=new Set(intermediateTerms(C||pos,P,dirExp).flatMap(expandTerm));
+  return remd.filter(r=>cells.has(r));
+}
+function coreSets(I,P,k){
+  return I.map(t=>{ const set=new Set(); P.filter(p=>subsumes(p,t)).forEach(p=>{ for(let j=0;j<k;j++) if(p[j]!=='-') set.add(j); }); return set; });
+}
+function intermediateFor(pos, remd, C, P, dirExp, k){
+  const cells=[...new Set(intermediateTerms(C,P,dirExp).flatMap(expandTerm))];
+  const res=minimalModels(primeImplicants(cells),pos);
+  const remSet=new Set(remd);
+  return {models:res.models, easy:cells.filter(x=>remSet.has(x)).length};
+}
+function solveTruthTable(conds, Y, rows, outMap, dirExp, choice){
+  const k=conds.length;
+  const pos=rows.filter(r=>outMap[r.idx]===1).map(r=>r.str);
+  const remd=rows.filter(r=>outMap[r.idx]===null).map(r=>r.str);
+  if(!pos.length) return null;
+  choice=choice||{};
+  const cPr=primeImplicants(pos), cRes=minimalModels(cPr,pos);
+  const pPr=primeImplicants(pos.concat(remd)), pRes=minimalModels(pPr,pos);
+  const ci=Math.min(choice.c||0,cRes.models.length-1), pi=Math.min(choice.p||0,pRes.models.length-1);
+  const C=cRes.models[ci], P=pRes.models[pi];
+  const iRes=intermediateFor(pos,remd,C,P,dirExp,k);
+  const I=iRes.models[0];
+  const core=coreSets(I,P,k);
+  return {
+    complex:{...describeSolution(C,conds,Y), ambiguous:cRes.ambiguous, nModels:cRes.models.length, models:cRes.models, idx:ci, capped:cRes.capped},
+    pars:{...describeSolution(P,conds,Y), ambiguous:pRes.ambiguous, nModels:pRes.models.length, models:pRes.models, idx:pi, capped:pRes.capped},
+    inter:{...describeSolution(I,conds,Y), core:new Map(I.map((t,i)=>[t,core[i]])), nModels:iRes.models.length, easy:iRes.easy},
+    nPos:pos.length, nRem:remd.length, pos, remd
+  };
+}
+function parsSA(pos, remd){
+  const pm=minimalModels(primeImplicants(pos.concat(remd)),pos), set=new Set();
+  pm.models.forEach(m=>remd.forEach(r=>{ if(m.some(t=>covers(t,r))) set.add(r); }));
+  return set;
+}
+function esaExclusions(conds, Y, rows, freq, incl, pri){
+  // Enhanced Standard Analysis (Schneider & Wagemann 2012):
+  // (1) contradictory simplifying assumptions: remainders used by the parsimonious solutions of both Y and ~Y (as R QCA findRows type 2);
+  // (2) remainders that contradict a necessary condition (consistency >= 0.90 and RoN >= 0.50).
+  const Yn=Y.map(v=>1-v), ttn=truthTable(conds,Yn);
+  const code=tt=>{ const pos=[],rem=[]; tt.rows.forEach(r=>{ if(r.n<freq) rem.push(r.str); else if(r.incl>=incl&&r.pri>=pri) pos.push(r.str); }); return {pos,rem}; };
+  const A=code({rows}), B=code(ttn);
+  let csa=[];
+  if(A.pos.length&&B.pos.length){ const s1=parsSA(A.pos,A.rem), s2=parsSA(B.pos,B.rem); csa=[...s1].filter(x=>s2.has(x)); }
+  const nec=[];
+  conds.forEach((X,j)=>{ const a=necessity(X,Y); if(a.cons>=0.9&&a.ron>=0.5) nec.push([j,'1']); const b=necessity(X.map(v=>1-v),Y); if(b.cons>=0.9&&b.ron>=0.5) nec.push([j,'0']); });
+  const necRows=nec.length? A.rem.filter(r=>nec.some(([j,v])=>r[j]!==v)) : [];
+  return {csa, necRows, nec};
+}
+function percentile(arr,p){
+  const a=arr.filter(Number.isFinite).sort((x,y)=>x-y); if(!a.length) return NaN;
+  const h=(a.length-1)*p, lo=Math.floor(h), hi=Math.ceil(h);
+  return a[lo]+(a[hi]-a[lo])*(h-lo);
+}
+// ===== ENGINE END =====
+
+// ---------- helpers ----------
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const f3=v=>Number.isFinite(v)?v.toFixed(3):'–';
+const f2=v=>Number.isFinite(v)?v.toFixed(2):'–';
+const r2=v=>Math.round(v*100)/100;
+const pc=v=>Number.isFinite(v)?Math.round(v*100)+'%':'–';
+function num(v){ if(v===null||v===undefined||v==='') return NaN; if(typeof v==='number') return v; const x=parseFloat(String(v).trim().replace(',','.')); return Number.isFinite(x)?x:NaN; }
+function meanOf(a){ const f=a.filter(Number.isFinite); return f.length?f.reduce((s,v)=>s+v,0)/f.length:NaN; }
+function sdOf(a){ const f=a.filter(Number.isFinite); if(f.length<2) return NaN; const m=meanOf(f); return Math.sqrt(f.reduce((s,v)=>s+(v-m)**2,0)/(f.length-1)); }
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),1900); }
+async function copyText(text,label){ try{ await navigator.clipboard.writeText(text); toast((label||'Text')+' copied'); } catch(e){ $('#modaltext').value=text; $('#modal').classList.add('show'); $('#modaltext').select(); } }
+function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+const lst=a=>a.length<2?a.join(''):a.slice(0,-1).join(', ')+' and '+a[a.length-1];
+const LG=()=>S.calStd==='r'?Math.log(19):3;
+const cv=(x,a)=>calibrateValue(x,a.full,a.cross,a.non,LG());
+
+// plain-language terms with the technical name on hover/tap
+function tip(label,text){ return `<span class="term" tabindex="0" data-tip="${esc(text)}">${label}</span>`; }
+const TM={
+  result:(t='result')=>tip(t,'Your dependent variable: what you want to explain. fsQCA papers call it the outcome.'),
+  factors:(t='factors')=>tip(t,'The variables that may explain the result: your independent variables, mediators and moderators. fsQCA papers call them conditions.'),
+  recipe:(t='recipe')=>tip(t,'A combination of factors that together lead to the result. fsQCA papers call it a configuration.'),
+  convert:(t='converting scores')=>tip(t,'fsQCA papers call this calibration: turning each score into a 0–1 membership score.'),
+  table:(t='combination table')=>tip(t,'fsQCA papers call this the truth table.'),
+  musthave:(t='must-have factor')=>tip(t,'fsQCA papers call this a necessary condition: the result almost never happens without it.'),
+  rel:(t='reliability')=>tip(t,'fsQCA papers call this consistency: how reliably a factor or recipe goes with the result, from 0 to 1. The usual benchmark is 0.80.'),
+  share:(t='share explained')=>tip(t,'fsQCA papers call this coverage: how much of the result a recipe accounts for, from 0 to 1.'),
+  uniq:(t='unique share')=>tip(t,'fsQCA papers call this unique coverage: the part of the result explained only by this recipe.'),
+  clean:(t='clean-signal score')=>tip(t,'fsQCA papers call this PRI consistency. It checks that a combination leads to the high result and not also to the low result.'),
+  minn:(t='minimum respondents')=>tip(t,'fsQCA papers call this the frequency threshold.'),
+  key:(t='key ingredient')=>tip(t,'fsQCA papers call this a core condition: strong evidence it matters.'),
+  support:(t='supporting ingredient')=>tip(t,'fsQCA papers call this a peripheral condition: weaker evidence it matters.'),
+  relev:(t='relevance')=>tip(t,'fsQCA papers call this relevance of necessity (RoN). Below about 0.5, the factor is so common that it looks “needed” for trivial reasons.'),
+  low:(t='low')=>tip(t,'The absence of the result, such as low BVC. fsQCA papers write it with a tilde (~BVC) and call it the negated outcome.'),
+  expect:(t='what your theory expects')=>tip(t,'fsQCA papers call these directional expectations.'),
+};
+
+// ---------- state ----------
+const S={
+  step:0, mode:'std', rows0:null, raw:null, fileName:'', columns:[], excluded:[], rejected:null, constructs:[], higher:[], scores:{}, alpha:{}, std:{},
+  scaleMin:1, scaleMax:7, reverse:'', autosaved:null,
+  exp:{size:'letter',font:'tnr',style:'apa',inc:{methods:true,calib:true,nec:true,tt:true,conf:true,rob:true,pred:true,xy:true,plain:false}},
+  calib:{}, calibSrc:{}, calStd:'fsqca', esa:true, fix05:true, selCal:null, modelChoice:{}, robust:null, predict:null, xySel:0,
+  roles:{}, arrows:{},
+  outcome:null, negate:false, conditions:[], planName:'',
+  freq:3, freqAuto:true, incl:0.80, pri:0.70, overrides:{}, ttSort:'n', dirExp:{}
+};
+
+// ---------- data ----------
+function isNumericCol(c){ let n=0,ok=0; for(const r of S.raw){ const v=r[c]; if(v===null||v===undefined||v==='') continue; n++; if(Number.isFinite(num(v))) ok++; } return n>0&&ok/n>=0.9; }
+function isStandardised(v){ const f=v.filter(Number.isFinite); if(f.length<10) return false; return Math.abs(meanOf(f))<0.05 && Math.abs(sdOf(f)-1)<0.05; }
+function looksStandardised(v){ const f=v.filter(Number.isFinite); return f.length>0 && Math.abs(meanOf(f))<0.1 && Math.min(...f)<0; }
+function variance(a){ const m=a.reduce((s,v)=>s+v,0)/a.length; return a.reduce((s,v)=>s+(v-m)**2,0)/(a.length-1); }
+function cronbach(mat){
+  const k=mat[0]?mat[0].length:0; if(k<2) return null;
+  const rows=mat.filter(r=>r.every(Number.isFinite)); if(rows.length<3) return null;
+  let sv=0; for(let j=0;j<k;j++) sv+=variance(rows.map(r=>r[j]));
+  const vt=variance(rows.map(r=>r.reduce((s,v)=>s+v,0)));
+  return vt>0? k/(k-1)*(1-sv/vt) : null;
+}
+function loadRows(rows,name){
+  if(!rows.length){ toast('That file has no rows'); return; }
+  const cols=new Set(); rows.slice(0,50).forEach(r=>Object.keys(r).forEach(k=>cols.add(k)));
+  const columns=[...cols], excluded=[], accepted=[];
+  S.rows0=rows; S.raw=rows;
+  const isIndex=c=>{ const t=c.trim(); if(t===''||/^unnamed/i.test(t)) return true; const v=rows.map(r=>num(r[c])); return v.every((x,i)=>x===i)||v.every((x,i)=>x===i+1); };
+  const isInteraction=c=>/\s[x×]\s|\*/i.test(c);
+  for(const c of columns){
+    const label=c.trim()||'(unnamed first column)';
+    if(/^(id|case|caseid|respondent|resp_?id|timestamp)$/i.test(c.trim())){ excluded.push({c:label,why:'respondent ID'}); continue; }
+    if(!isNumericCol(c)){ excluded.push({c:label,why:'not numbers'}); continue; }
+    if(isIndex(c)){ excluded.push({c:label,why:'row numbers'}); continue; }
+    if(isInteraction(c)){ excluded.push({c:label,why:'moderation term from SmartPLS, not needed here'}); continue; }
+    const v=rows.map(r=>num(r[c])).filter(Number.isFinite);
+    if(S.mode==='std' && !isStandardised(v)){ excluded.push({c:label,why:`not standardised: mean ${f2(meanOf(v))}, SD ${f2(sdOf(v))}`,bad:true}); continue; }
+    accepted.push(c);
+  }
+  S.fileName=name; S.columns=columns; S.excluded=excluded; S.higher=[]; S.reverse='';
+  if(S.mode==='std'){
+    S.constructs=accepted.map(c=>({name:c.trim().replace(/[^\w]/g,'')||c.trim(), items:[c], include:true}));
+  } else {
+    const groups={};
+    accepted.forEach(c=>{ const m=c.trim().match(/^(.*?)[\s_.\-]*(\d+)$/); const key=(m&&m[1])?m[1]:c.trim(); (groups[key]=groups[key]||[]).push(c); });
+    S.constructs=Object.entries(groups).map(([n,items])=>({name:n.replace(/[^\w]/g,'')||n, items, include:true}));
+    let lo=Infinity, hi=-Infinity;
+    accepted.forEach(c=>{ const v=rows.map(r=>num(r[c])).filter(Number.isFinite); if(!v.length||Math.min(...v)<0) return; v.forEach(x=>{ if(x<lo)lo=x; if(x>hi)hi=x; }); });
+    S.scaleMin=Number.isFinite(lo)?Math.floor(lo):1; S.scaleMax=Number.isFinite(hi)?Math.ceil(hi):7;
+  }
+  Object.assign(S,{calib:{},calibSrc:{},roles:{},arrows:{},outcome:null,conditions:[],negate:false,overrides:{},dirExp:{},selCal:null,planName:'',freqAuto:true,modelChoice:{},robust:null,predict:null});
+  if(accepted.length) S.rejected=null; else { S.raw=null; S.rejected={name,excluded}; }
+  computeScores();
+}
+function computeScores(){
+  S.scores={}; S.alpha={}; S.std={};
+  if(!S.raw) return;
+  const rev=new Set((S.reverse||'').split(/[,;\s]+/).map(x=>x.trim()).filter(Boolean)), lo=S.scaleMin, hi=S.scaleMax;
+  for(const c of S.constructs){
+    if(!c.include||!c.name||!c.items.length) continue;
+    const mat=S.raw.map(r=>c.items.map(it=>{ let v=num(r[it]); if(S.mode==='raw'&&Number.isFinite(v)&&rev.has(it)) v=lo+hi-v; return v; }));
+    S.scores[c.name]= c.items.length===1? mat.map(v=>v[0]) : mat.map(v=>meanOf(v));
+    S.alpha[c.name]= c.items.length>1? cronbach(mat) : null;
+  }
+  for(const h of S.higher){
+    const parts=h.parts.filter(q=>S.scores[q]); if(!h.name||!parts.length) continue;
+    S.scores[h.name]=S.raw.map((_,i)=>{ const v=parts.map(q=>S.scores[q][i]); return v.every(Number.isFinite)?v.reduce((a,b)=>a+b,0)/v.length:NaN; });
+    S.alpha[h.name]=null;
+  }
+  for(const v of Object.keys(S.scores)) S.std[v]= S.mode==='std' || looksStandardised(S.scores[v]);
+  for(const v of Object.keys(S.scores)) if(!S.calib[v]) setRecommended(v);
+  if(!S.selCal||!S.scores[S.selCal]) S.selCal=Object.keys(S.scores)[0]||null;
+  S.conditions=S.conditions.filter(c=>S.scores[c]);
+  if(S.outcome&&!S.scores[S.outcome]) S.outcome=null;
+}
+function defaultAnchors(shift){
+  const a=S.scaleMin,b=S.scaleMax,r=b-a, d=shift||0;
+  return r>=4 ? {full:r2(b-1+d), cross:r2((a+b)/2), non:r2(a+1-d)} : {full:r2(b-r/4+d*r/6), cross:r2((a+b)/2), non:r2(a+r/4-d*r/6)};
+}
+function pctAnchors(v,hi=.95,lo=.05){ const s=S.scores[v]; return {full:r2(percentile(s,hi)),cross:r2(percentile(s,.5)),non:r2(percentile(s,lo))}; }
+function setRecommended(v){ if(S.std[v]){ S.calib[v]=pctAnchors(v); S.calibSrc[v]='pct'; } else { S.calib[v]=defaultAnchors(); S.calibSrc[v]='scale'; } }
+function calibrated(name){ const a=S.calib[name]; return S.scores[name].map(x=>{ let v=cv(x,a); if(S.fix05&&v===0.5) v=0.501; return v; }); }
+function vars(){ return Object.keys(S.scores); }
+function analysisData(){
+  const names=[...S.conditions], o=S.outcome, cal={};
+  [...names,o].forEach(n=>cal[n]=calibrated(n));
+  const idx=[]; for(let i=0;i<S.raw.length;i++) if([...names,o].every(n=>Number.isFinite(cal[n][i]))) idx.push(i);
+  const conds=names.map(n=>idx.map(i=>cal[n][i]));
+  let Y=idx.map(i=>cal[o][i]); if(S.negate) Y=Y.map(v=>1-v);
+  return {names,conds,Y,idx,N:idx.length,dropped:S.raw.length-idx.length,out:(S.negate?'~':'')+o,
+    plainOut:(S.negate?'low ':'high ')+o};
+}
+function recFreq(rows,total){
+  let f= total<150?2 : total<=500?3 : 5;
+  const kept=f=>rows.filter(r=>r.n>=f).reduce((s,r)=>s+r.n,0)/total;
+  while(f>1 && kept(f)<0.8) f--;
+  return f;
+}
+function codeRows(rows){
+  const m={};
+  for(const r of rows){ if(r.n<S.freq){ m[r.idx]=null; continue; } const auto=(r.incl>=S.incl&&r.pri>=S.pri)?1:0; m[r.idx]=(r.idx in S.overrides)?S.overrides[r.idx]:auto; }
+  return m;
+}
+function applyESA(conds,Y,rows,map,freq,incl,pri){
+  if(!S.esa) return {csa:[],necRows:[],nec:[],excluded:new Set()};
+  const e=esaExclusions(conds,Y,rows,freq,incl,pri); const ex=new Set([...e.csa,...e.necRows]);
+  rows.forEach(r=>{ if(map[r.idx]===null && ex.has(r.str)) map[r.idx]=0; });
+  return Object.assign(e,{excluded:ex});
+}
+function currentTT(){ const d=analysisData(), tt=truthTable(d.conds,d.Y); const total=d.N-tt.ambiguous; if(S.freqAuto) S.freq=recFreq(tt.rows,total); const map=codeRows(tt.rows); const esa=applyESA(d.conds,d.Y,tt.rows,map,S.freq,S.incl,S.pri); return {d,tt,total,map,esa}; }
+function dirFor(n){ return S.dirExp[n] ?? (S.negate?'0':'1'); }
+function termLabel(t,names){ const p=[]; for(let j=0;j<t.length;j++){ if(t[j]==='1') p.push(names[j]); else if(t[j]==='0') p.push('~'+names[j]); } return p.join('*')||'(tautology)'; }
+function termPlain(t,names){ const p=[]; for(let j=0;j<t.length;j++){ if(t[j]==='1') p.push('high '+names[j]); else if(t[j]==='0') p.push('low '+names[j]); } return p; }
+function anchorsOk(){ return [...S.conditions,S.outcome].every(v=>v&&validAnchors(S.calib[v])); }
+function maxReach(){
+  if(!S.raw) return 0;
+  if(!vars().length) return 1;
+  if(!S.outcome||S.conditions.length<1) return 2;
+  if(!anchorsOk()) return 3;
+  return 6;
+}
+
+// ---------- model roles and analysis plans ----------
+const ROLES=[['','Choose…'],['iv','Independent variable'],['med','Mediator'],['mod','Moderator'],['dv','Dependent variable'],['none','Leave out']];
+function targetsFor(v){ return vars().filter(t=>t!==v&&(S.roles[t]==='dv'||S.roles[t]==='med')); }
+function getArrows(v){ const opts=targetsFor(v); return S.arrows[v]? S.arrows[v].filter(t=>opts.includes(t)) : opts; }
+function plans(){
+  const vs=vars(), out=[];
+  const targets=[...vs.filter(v=>S.roles[v]==='med'),...vs.filter(v=>S.roles[v]==='dv')];
+  for(const t of targets){
+    const f=vs.filter(v=>v!==t&&['iv','med','mod'].includes(S.roles[v])&&getArrows(v).includes(t));
+    out.push({key:'p_'+t,result:t,factors:f,kind:S.roles[t]});
+  }
+  const dvs=vs.filter(v=>S.roles[v]==='dv');
+  if(dvs.length===1 && vs.some(v=>S.roles[v]==='med')){
+    const f=vs.filter(v=>['iv','med','mod'].includes(S.roles[v]));
+    const main=out.find(p=>p.result===dvs[0]);
+    if(!main||f.length!==main.factors.length) out.push({key:'whole',result:dvs[0],factors:f,kind:'whole'});
+  }
+  return out;
+}
+function planTitle(p){ return p.kind==='whole'?`Whole model: what leads to ${p.result}?`:`What leads to ${p.result}?`; }
+function startPlan(p,neg,jump){
+  S.robust=null; S.predict=null; S.xySel=0;
+  S.outcome=p.result; S.conditions=[...p.factors]; S.negate=!!neg; S.planName=planTitle(p);
+  S.overrides={}; S.dirExp={}; S.freqAuto=true;
+  S.step = jump!=null? jump : 3; render(); scrollTop();
+}
+
+function sampleRows(){
+  const rnd=mulberry32(7);
+  const g=()=>{ let u=0; while(!u) u=rnd(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*rnd()); };
+  const names=['PE','EE','SI','TAITA','FC','AIL','BI','UB'], L=Object.fromEntries(names.map(n=>[n,[]]));
+  for(let i=0;i<320;i++){
+    const c=g();
+    const x={PE:.5*c+.85*g(), EE:.5*c+.85*g(), SI:.35*c+.9*g(), TAITA:.45*c+.85*g(), FC:.4*c+.9*g(), AIL:.3*c+.95*g()};
+    x.BI=.3*x.PE+.12*x.EE+.18*x.SI+.22*x.TAITA+.1*x.FC+.15*x.AIL+.3*Math.min(x.PE,x.AIL)+.5*g();
+    x.UB=.55*x.BI+.25*x.FC+.15*x.AIL+.6*g();
+    names.forEach(n=>L[n].push(x[n]));
+  }
+  names.forEach(n=>{ const m=meanOf(L[n]), sd=sdOf(L[n]); L[n]=L[n].map(v=>Math.round((v-m)/sd*1000)/1000); });
+  return L.PE.map((_,i)=>Object.fromEntries(names.map(n=>[n,L[n][i]])));
+}
+function parseCSV(text){
+  const lines=[]; let row=[], cell='', q=false;
+  for(let i=0;i<text.length;i++){
+    const ch=text[i];
+    if(q){ if(ch==='"'){ if(text[i+1]==='"'){cell+='"';i++;} else q=false; } else cell+=ch; }
+    else if(ch==='"') q=true;
+    else if(ch===','||ch===';'||ch==='\t'){ row.push(cell); cell=''; }
+    else if(ch==='\n'||ch==='\r'){ if(ch==='\r'&&text[i+1]==='\n') i++; row.push(cell); lines.push(row); row=[]; cell=''; }
+    else cell+=ch;
+  }
+  if(cell||row.length){ row.push(cell); lines.push(row); }
+  const head=lines.shift()||[];
+  return lines.filter(l=>l.some(x=>x!=='')).map(l=>Object.fromEntries(head.map((h,i)=>[h.trim(),l[i]??null])));
+}
+async function handleFile(file){
+  try{
+    let rows;
+    if(window.XLSX){ const wb=XLSX.read(await file.arrayBuffer(),{type:'array'}); rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:null,raw:true}); }
+    else if(/\.csv$/i.test(file.name)){ rows=parseCSV(await file.text()); }
+    else { toast('Excel reading is unavailable here; save the file as CSV'); return; }
+    loadRows(rows,file.name); render();
+  }catch(e){ toast('Could not read that file. Save it as CSV and try again.'); }
+}
+function todo(html){ return `<div class="todo"><div class="todo-h">What to do here</div>${html}</div>`; }
+function excludedNote(){
+  if(!S.excluded||!S.excluded.length) return '';
+  const bad=S.excluded.filter(e=>e.bad), other=S.excluded.filter(e=>!e.bad);
+  return (other.length?`<div class="callout info">Left out automatically: ${other.map(e=>`<b>${esc(e.c)}</b> (${esc(e.why)})`).join('; ')}.</div>`:'')+
+    (bad.length?`<div class="callout warn">Left out because SaNaSoft currently accepts only standardised scores: ${bad.map(e=>`<b>${esc(e.c)}</b> (${esc(e.why)})`).join('; ')}. Export standardised latent variable scores from SmartPLS to include ${bad.length>1?'them':'it'}.</div>`:'');
+}
+function flipBar(d){
+  return `<div class="flip">${S.planName?`<span class="muted">${esc(S.planName)}</span>`:''} Now analysing what leads to <b>${esc(d.plainOut)}</b>, using ${d.names.length} ${TM.factors()}, N = ${d.N}. <button class="btn small" id="flip">Switch to ${S.negate?'high':'low'} ${esc(S.outcome)}</button></div>`;
+}
+function bindFlip(){ const b=$('#flip'); if(b) b.onclick=()=>{ S.negate=!S.negate; S.overrides={}; S.dirExp={}; S.robust=null; S.predict=null; S.xySel=0; render(); }; }
+
+// ---------- steps ----------
+const STEPS=[
+{ title:'Upload scores',
+  guide:`<h3>What this step is</h3><p>SaNaSoft works with the construct scores from your SmartPLS model: one row per respondent.</p><p>The file is read inside your browser and never uploaded anywhere.</p><h3>Which kind of file?</h3><p><b>Standardised latent variable scores</b> are SmartPLS’s default export: one column per construct, mean 0.</p><p><b>Unstandardised scores or raw items</b> keep your questionnaire scale (for example 1–7). Raw items are grouped into constructs by their names (PE1, PE2 …) and averaged. Scale-based reference points, such as 6, 4 and 2 on a 1–7 scale, are often easier to justify to reviewers.</p><h3>Coming back later</h3><p>SaNaSoft keeps your work in this browser automatically. Use “Save project” to keep a file you can open on any computer.</p>`,
+  render(){
+    let msg='';
+    if(S.rejected){
+      msg=`<div class="callout warn">No usable scores were found in <b>${esc(S.rejected.name)}</b>.${S.mode==='std'?' In “Standardised scores” mode every construct must have a mean of 0 and a standard deviation of 1. If your file holds raw items or unstandardised scores, switch to the second option above.':''}${S.rejected.excluded.length?' Columns checked: '+S.rejected.excluded.map(e=>`<b>${esc(e.c)}</b> (${esc(e.why)})`).join('; ')+'.':''}</div>`;
+    } else if(S.raw){
+      const cols=S.constructs.flatMap(c=>c.items).slice(0,14);
+      msg=`<div class="callout ok">Loaded <b>${esc(S.fileName)}</b>: ${S.raw.length} respondents and ${S.constructs.length} construct${S.constructs.length===1?'':'s'}. Click Continue.</div>${excludedNote()}
+      <div class="scroll"><table><thead><tr>${cols.map(c=>`<th class="r">${esc(c)}</th>`).join('')}</tr></thead>
+      <tbody>${S.raw.slice(0,5).map(r=>`<tr>${cols.map(c=>`<td class="r">${esc(r[c]??'')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+    }
+    const auto=!S.raw&&S.autosaved?`<div class="callout info">You have unfinished work from ${esc(new Date(S.autosaved.savedAt).toLocaleString())}: <b>${esc(S.autosaved.fileName||'')}</b>. <button class="btn small primary" id="resume">Continue where you left off</button> <button class="btn small ghost" id="discard">Start fresh</button></div>`:'';
+    return todo(`<p>Choose what kind of file you have, then upload it. To continue earlier work, open a saved project instead.</p>`)+auto+
+      `<div class="modepick" role="radiogroup" aria-label="Kind of file">
+        <label class="modeopt ${S.mode==='std'?'on':''}"><input type="radio" name="mode" value="std" ${S.mode==='std'?'checked':''}><b>Standardised latent variable scores</b><span>SmartPLS’s default export. One column per construct.</span></label>
+        <label class="modeopt ${S.mode==='raw'?'on':''}"><input type="radio" name="mode" value="raw" ${S.mode==='raw'?'checked':''}><b>Unstandardised scores or raw items</b><span>Scores on your questionnaire scale, or item columns such as PE1, PE2, PE3.</span></label></div>
+      <div class="drop" id="drop"><p class="dt">Drop your file here</p><p class="note">CSV or Excel, one row per respondent</p>
+      <div class="row"><label class="btn primary">Choose file<input type="file" id="file" accept=".csv,.xlsx,.xls" hidden></label><label class="btn">Open saved project<input type="file" id="openproj" accept=".json" hidden></label><button class="btn" id="sample">Use sample scores</button></div>
+      <p class="note">The sample is a UTAUT model: PE, EE, SI, TAITA and FC predict BI, AIL is a moderator, and BI leads to UB. 320 simulated respondents.</p></div>${msg}
+      <p class="credit">SaNaSoft ${APP_VERSION} was developed by ${DEVELOPERS}.</p>${citeBox()}`;
+  },
+  bind(){
+    const drop=$('#drop');
+    $$('input[name="mode"]').forEach(el=>el.onchange=()=>{ S.mode=el.value; if(S.rows0) loadRows(S.rows0,S.fileName); render(); });
+    $('#file').onchange=e=>{ const f=e.target.files[0]; if(f) handleFile(f); };
+    $('#openproj').onchange=async e=>{ const f=e.target.files[0]; if(!f) return; try{ openProject(JSON.parse(await f.text())); }catch(err){ toast('That is not a SaNaSoft project file'); } };
+    drop.ondragover=e=>{ e.preventDefault(); drop.classList.add('over'); };
+    drop.ondragleave=()=>drop.classList.remove('over');
+    drop.ondrop=async e=>{ e.preventDefault(); drop.classList.remove('over'); const f=e.dataTransfer.files[0]; if(!f) return; if(/\.json$/i.test(f.name)){ try{ openProject(JSON.parse(await f.text())); }catch(err){ toast('That is not a SaNaSoft project file'); } } else handleFile(f); };
+    $('#sample').onclick=()=>{
+      S.mode='std'; loadRows(sampleRows(),'sample-utaut-scores.csv');
+      ['PE','EE','SI','TAITA','FC'].forEach(v=>S.roles[v]='iv'); S.roles.AIL='mod'; S.roles.BI='med'; S.roles.UB='dv';
+      S.arrows={PE:['BI'],EE:['BI'],SI:['BI'],TAITA:['BI'],FC:['BI','UB'],AIL:['BI'],BI:['UB']};
+      render(); toast('Sample scores loaded');
+    };
+    bindCiteBox();
+    const rs=$('#resume'); if(rs) rs.onclick=()=>{ try{ openProject(JSON.parse(localStorage.getItem(AUTOKEY))); }catch(e){ toast('Could not restore the earlier work'); } };
+    const ds=$('#discard'); if(ds) ds.onclick=()=>{ try{ localStorage.removeItem(AUTOKEY); }catch(e){} S.autosaved=null; render(); };
+  }
+},
+{ title:'Check variables',
+  guide:`<h3>What this step is</h3><p>A quick check that SaNaSoft read your file correctly.</p><p><b>Standardised scores</b> should each have a mean of 0 and a standard deviation of 1.</p><p><b>Raw items</b> are grouped into constructs by name. Check the groups, fix any that are wrong, and list reverse-coded items so they are flipped before averaging. Cronbach’s α is shown as a quick reliability check.</p><h3>Higher-order constructs</h3><p>If a construct is made of dimensions (for example four AI-literacy dimensions forming AIL), combine them. Its score is the mean of the dimension scores.</p><h3>Columns left out</h3><p>Row numbers and SmartPLS moderation terms (like “AIGM x HAIC”) are left out automatically. You don’t need the moderation term.</p>`,
+  render(){
+    const raw=S.mode==='raw';
+    const tbl=S.constructs.map((c,i)=>{ const v=S.scores[c.name]||[], f=v.filter(Number.isFinite);
+      const type=!S.scores[c.name]?'–':S.std[c.name]?'Standardised':(c.items.length>1?'Item mean':'Scale score');
+      return `<tr><td><input type="checkbox" data-inc="${i}" ${c.include?'checked':''} aria-label="Use ${esc(c.name)}"></td>
+      <td><input class="inp" style="width:110px" data-name="${i}" value="${esc(c.name)}"></td>
+      ${raw?`<td><input class="inp wide" style="min-width:200px" data-items="${i}" value="${esc(c.items.join(', '))}"></td><td class="muted">${type}</td>`:''}
+      <td class="r">${f2(meanOf(f))}</td><td class="r">${f2(sdOf(f))}</td><td class="r">${f.length?f2(Math.min(...f)):'–'}</td><td class="r">${f.length?f2(Math.max(...f)):'–'}</td>
+      ${raw?`<td class="r">${S.alpha[c.name]!=null?f2(S.alpha[c.name]):'–'}</td>`:`<td class="r">${v.length-f.length}</td>`}</tr>`; }).join('');
+    const names=S.constructs.filter(c=>c.include).map(c=>c.name);
+    const hi=raw?`<div class="subblock"><div class="sub">Higher-order constructs</div>${S.higher.map((h,i)=>`<div class="plan"><div class="fields"><label class="field">Name<input class="inp" style="width:120px" data-hname="${i}" value="${esc(h.name)}"></label><button class="btn small ghost" data-hdel="${i}">Remove</button></div>
+      <div class="chips">${names.filter(n=>n!==h.name).map(n=>`<label class="chip small ${h.parts.includes(n)?'on':''}"><input type="checkbox" data-hpart="${i}" value="${esc(n)}" ${h.parts.includes(n)?'checked':''}>${esc(n)}</label>`).join('')}</div></div>`).join('')||'<p class="note">None. Only needed if your model has one.</p>'}<div><button class="btn small" id="addh">Add higher-order construct</button></div></div>`:'';
+    return todo(raw?`<p>Check that each construct has the right items. Set the scale, and list any reverse-coded items. Then click Continue.</p>`:`<p>Check that every construct from your SmartPLS model is listed. Usually you don’t need to change anything: just click Continue.</p>`)+
+      excludedNote()+(raw?`<div class="fields"><label class="field">Scale lowest point<input class="inp" id="smin" type="number" value="${S.scaleMin}"></label><label class="field">Scale highest point<input class="inp" id="smax" type="number" value="${S.scaleMax}"></label><label class="field" style="flex:1;min-width:220px">Reverse-coded items<input class="inp wide" id="rev" placeholder="e.g. EE3, SI2" value="${esc(S.reverse)}"></label></div>`:'')+
+      `<div class="scroll"><table><thead><tr><th>Use</th><th>Variable</th>${raw?'<th>Items (comma-separated)</th><th>Type</th>':''}<th class="r">Mean</th><th class="r">SD</th><th class="r">Lowest</th><th class="r">Highest</th>${raw?'<th class="r">Cronbach α</th>':'<th class="r">Missing</th>'}</tr></thead><tbody>${tbl}</tbody></table></div>`+hi+
+      (raw&&Object.keys(S.std).some(v=>S.std[v])?`<div class="callout info">${Object.keys(S.std).filter(v=>S.std[v]).map(esc).join(', ')} look${Object.keys(S.std).filter(v=>S.std[v]).length>1?'':'s'} standardised, so ${Object.keys(S.std).filter(v=>S.std[v]).length>1?'they':'it'} will get percentile reference points in step 4.</div>`:'');
+  },
+  bind(){
+    const re=()=>{ computeScores(); render(); };
+    $$('[data-inc]').forEach(el=>el.onchange=()=>{ S.constructs[+el.dataset.inc].include=el.checked; re(); });
+    $$('[data-name]').forEach(el=>el.onchange=()=>{
+      const c=S.constructs[+el.dataset.name], old=c.name, nw=el.value.trim().replace(/[^\w]/g,'');
+      if(!nw||S.constructs.some(x=>x!==c&&x.name===nw)){ toast('Use a unique name with letters, digits or _'); render(); return; }
+      c.name=nw;
+      for(const k of ['calib','calibSrc','roles','arrows']) if(S[k][old]!==undefined){ S[k][nw]=S[k][old]; delete S[k][old]; }
+      Object.keys(S.arrows).forEach(k=>S.arrows[k]=S.arrows[k].map(x=>x===old?nw:x)); S.higher.forEach(h=>h.parts=h.parts.map(x=>x===old?nw:x));
+      S.conditions=S.conditions.map(x=>x===old?nw:x); if(S.outcome===old) S.outcome=nw; if(S.selCal===old) S.selCal=nw; re(); });
+    $$('[data-items]').forEach(el=>el.onchange=()=>{ const cols=new Set(S.columns); const list=el.value.split(',').map(x=>x.trim()).filter(Boolean); const bad=list.filter(x=>!cols.has(x)); S.constructs[+el.dataset.items].items=list.filter(x=>cols.has(x)); if(bad.length) toast('Not found: '+bad.join(', ')); re(); });
+    const sm=$('#smin'); if(sm) sm.onchange=e=>{ S.scaleMin=num(e.target.value); S.calib={}; S.calibSrc={}; re(); };
+    const sx=$('#smax'); if(sx) sx.onchange=e=>{ S.scaleMax=num(e.target.value); S.calib={}; S.calibSrc={}; re(); };
+    const rv=$('#rev'); if(rv) rv.onchange=e=>{ S.reverse=e.target.value; re(); };
+    const ah=$('#addh'); if(ah) ah.onclick=()=>{ S.higher.push({name:'HO'+(S.higher.length+1),parts:[]}); render(); };
+    $$('[data-hname]').forEach(el=>el.onchange=()=>{ S.higher[+el.dataset.hname].name=el.value.trim().replace(/[^\w]/g,''); re(); });
+    $$('[data-hdel]').forEach(el=>el.onclick=()=>{ S.higher.splice(+el.dataset.hdel,1); re(); });
+    $$('[data-hpart]').forEach(el=>el.onchange=()=>{ const h=S.higher[+el.dataset.hpart]; h.parts=el.checked?[...h.parts,el.value]:h.parts.filter(x=>x!==el.value); re(); });
+  }
+},
+{ title:'Describe your model',
+  guide:`<h3>The four roles</h3><p><b>Dependent variable:</b> the final result in your model. Arrows end here, for example BVC or use behaviour.</p><p><b>Independent variable:</b> a predictor. Arrows start here, for example AAIR or performance expectancy.</p><p><b>Mediator:</b> sits in the middle. It receives arrows and sends an arrow onward, for example HAIC or behavioural intention.</p><p><b>Moderator:</b> changes the strength of a relationship. In SmartPLS it has a dotted arrow pointing at another arrow, for example AIGM or AI literacy.</p><h3>Do mediators and moderators go in?</h3><p>Yes. fsQCA looks at combinations, so it handles both naturally.</p><p>A <b>moderator</b> is included as an ordinary ${TM.factors('factor')}. If it matters, it shows up in the ${TM.recipe('recipes')} together with the factors it strengthens. No moderation term is needed.</p><p>A <b>mediator</b> is analysed twice: once as a result of the variables that point to it, and once as a factor for the dependent variable. Recipes that combine a predictor with the mediator point to the indirect route you tested in SmartPLS.</p>`,
+  render(){
+    const vs=vars();
+    const rows=vs.map(v=>{
+      const r=S.roles[v]||'';
+      let arrow='<span class="muted">–</span>';
+      if(r==='iv'||r==='med'||r==='mod'){
+        const opts=targetsFor(v), on=getArrows(v);
+        const lead= r==='mod'?'Its dotted arrow points at arrows going into:':'Arrows go to:';
+        arrow= opts.length? `<div class="arrowcell"><span class="note">${lead}</span><div class="chips">${opts.map(t=>`<label class="chip small ${on.includes(t)?'on':''}"><input type="checkbox" data-arrow="${esc(v)}" value="${esc(t)}" ${on.includes(t)?'checked':''}>${esc(t)}</label>`).join('')}</div></div>` : '<span class="note">Mark a dependent variable or mediator first</span>';
+      }
+      return `<tr><td><b>${esc(v)}</b></td><td><select class="inp" style="width:auto" data-role="${esc(v)}">${ROLES.map(([k,l])=>`<option value="${k}" ${r===k?'selected':''}>${l}</option>`).join('')}</select></td><td>${arrow}</td></tr>`;
+    }).join('');
+    const ps=plans();
+    const hasDV=vs.some(v=>S.roles[v]==='dv');
+    const unset=vs.filter(v=>!S.roles[v]);
+    const planCards=ps.map((p,i)=>{
+      const k=p.factors.length;
+      const meds=p.factors.filter(v=>S.roles[v]==='med'), mods=p.factors.filter(v=>S.roles[v]==='mod');
+      let why = p.kind==='med' ? `${esc(p.result)} is a mediator, so it is also a result of the variables pointing to it. This shows which combinations of them lead to high ${esc(p.result)}.`
+              : p.kind==='whole' ? `Puts every variable into one analysis, including those that affect ${esc(p.result)} only through a mediator. Useful as an extra check.`
+              : `Mirrors the arrows going into ${esc(p.result)} in your SmartPLS model.`;
+      let notes='';
+      if(meds.length) notes+=`<p class="note">${esc(lst(meds))} ${meds.length>1?'are':'is'} included as ${meds.length>1?'factors':'a factor'}. If recipes combine ${meds.length>1?'them':'it'} with a predictor, that supports the indirect route in your model.</p>`;
+      if(mods.length) notes+=`<p class="note">${esc(lst(mods))} ${mods.length>1?'are':'is'} included as ${mods.length>1?'ordinary factors':'an ordinary factor'}. If ${mods.length>1?'they matter':'it matters'}, ${mods.length>1?'they':'it'} will appear in the recipes alongside the factors ${mods.length>1?'they strengthen':'it strengthens'}.</p>`;
+      let warn='';
+      if(k===0) warn=`<div class="callout warn">No arrows go into ${esc(p.result)} yet. Set “Arrows go to” above.</div>`;
+      else if(k===1) warn=`<div class="callout warn">Only one factor. fsQCA needs at least two to find combinations, so this analysis adds little.</div>`;
+      else if(k>7) warn=`<div class="callout warn">${k} factors give ${2**k} possible combinations, and most will have too few respondents. Prefer the analyses based on direct arrows, or leave out the weakest paths.</div>`;
+      else if(k>10) warn=`<div class="callout warn">SaNaSoft supports up to 10 factors.</div>`;
+      const can=k>=1&&k<=10;
+      return `<div class="plan"><div class="plan-h"><span class="plan-n">Analysis ${i+1}</span><b>${esc(planTitle(p))}</b></div>
+        <p class="plan-f">${TM.result('Result')}: <b>${esc(p.result)}</b> · ${TM.factors('Factors')}: ${k?p.factors.map(f=>`<b>${esc(f)}</b>`).join(', '):'none'}</p>
+        <p class="plan-w">${why}</p>${notes}${warn}
+        <div class="row"><button class="btn primary small" data-plan="${i}" data-neg="0" ${can?'':'disabled'}>Start: what leads to high ${esc(p.result)}</button><button class="btn small" data-plan="${i}" data-neg="1" ${can?'':'disabled'}>What leads to low ${esc(p.result)}</button></div></div>`;
+    }).join('');
+    return todo(`<p>Look at your SmartPLS model diagram. For each variable, choose its role. For predictors, mediators and moderators, tick where their arrows go.</p><p>SaNaSoft then suggests which analyses to run. Start with Analysis 1, then come back here for the others.</p>`)+
+      `<div class="scroll"><table><thead><tr><th>Variable</th><th>Role in your SmartPLS model</th><th>Paths</th></tr></thead><tbody>${rows}</tbody></table></div>
+      ${unset.length?`<p class="note">Still to choose: ${unset.map(esc).join(', ')}.</p>`:''}
+      <div class="subblock"><div class="sub">Suggested analyses</div>
+      ${!hasDV?'<div class="callout info">Mark at least one dependent variable to see suggested analyses.</div>':planCards||'<div class="callout info">Set the arrows to see suggested analyses.</div>'}
+      ${hasDV&&ps.length?'<p class="note">Report the analyses for both high and low levels: in fsQCA, the reasons for a low result are not simply the reverse of the reasons for a high result.</p>':''}</div>
+      <details class="adv"><summary>Advanced: choose the result and factors yourself</summary>
+      <div class="subblock"><p class="note">Result (dependent variable)</p><div class="chips">${vs.map(v=>`<label class="chip outc ${S.outcome===v?'on':''}"><input type="radio" name="out" value="${esc(v)}" ${S.outcome===v?'checked':''}>${esc(v)}</label>`).join('')}</div>
+      <p class="note">Factors</p><div class="chips">${vs.map(v=>{ const dis=v===S.outcome, on=S.conditions.includes(v); return `<label class="chip ${on?'on':''} ${dis?'dis':''}"><input type="checkbox" value="${esc(v)}" data-cond ${on?'checked':''} ${dis?'disabled':''}>${esc(v)}</label>`; }).join('')}</div>
+      ${S.outcome&&S.conditions.length&&!S.planName?`<p class="note">Your own analysis: ${esc(S.outcome)} with ${esc(lst(S.conditions))}. Click Continue.</p>`:''}</div></details>`;
+  },
+  bind(){
+    $$('[data-role]').forEach(el=>el.onchange=()=>{ S.roles[el.dataset.role]=el.value; render(); });
+    $$('[data-arrow]').forEach(el=>el.onchange=()=>{ const v=el.dataset.arrow; const cur=getArrows(v); S.arrows[v]=el.checked?[...new Set([...cur,el.value])]:cur.filter(t=>t!==el.value); render(); });
+    const ps=plans();
+    $$('[data-plan]').forEach(b=>b.onclick=()=>startPlan(ps[+b.dataset.plan], b.dataset.neg==='1'));
+    $$('input[name="out"]').forEach(el=>el.onchange=()=>{ S.outcome=el.value; S.conditions=S.conditions.filter(c=>c!==el.value); S.planName=''; S.overrides={}; S.freqAuto=true; render(); $('details.adv').open=true; });
+    $$('[data-cond]').forEach(el=>el.onchange=()=>{ const v=el.value; S.conditions=el.checked?vars().filter(x=>x===v||S.conditions.includes(x)):S.conditions.filter(c=>c!==v); if(S.conditions.length>10){ S.conditions=S.conditions.filter(c=>c!==v); toast('Up to 10 factors'); } S.planName=''; S.overrides={}; S.freqAuto=true; render(); $('details.adv').open=true; });
+  }
+},
+{ title:'Convert scores to 0–1',
+  guide:`<h3>What this step is</h3><p>fsQCA asks, for each respondent, “how much does this person belong to the group with high AAIR?” The answer runs from 0 (clearly low) to 1 (clearly high). This step, called ${TM.convert('calibration')} in papers, converts your scores into those 0–1 values.</p><h3>The three reference points</h3><p><b>Clearly high</b> (0.95), <b>middle point</b> (0.5) and <b>clearly low</b> (0.05).</p><p>For <b>standardised scores</b>, SaNaSoft takes these from your data: the 95th, 50th and 5th percentiles, which is what most published studies do.</p><p>For <b>scores on your questionnaire scale</b>, it uses the scale’s wording: on a 1–7 scale, 6 (agree), 4 (neutral) and 2 (disagree).</p><h3>For your robustness check</h3><p>Later, come back and click the 90 / 50 / 10 button, rerun your analysis and see whether the recipes stay the same. Reviewers expect this.</p><h3>The tick box</h3><p>A respondent exactly at the middle point belongs to neither group and would be dropped. The tick box nudges them to 0.501 so they stay in (Fiss, 2011).</p>`,
+  render(){
+    const used=new Set([...S.conditions,S.outcome]);
+    const rows=vars().filter(v=>used.has(v)).map(v=>{
+      const a=S.calib[v], ok=validAnchors(a), sc=S.scores[v];
+      let pin='–', at='–';
+      if(ok){ const c=sc.map(x=>cv(x,a)).filter(Number.isFinite); pin=pc(c.filter(x=>x>0.5).length/c.length); at=c.filter(x=>x===0.5).length; }
+      const src={pct:'95 / 50 / 5 percentiles (recommended)',pct90:'90 / 50 / 10 percentiles',scale:'Scale points (recommended)',custom:'Your own'}[S.calibSrc[v]]||'Your own';
+      return `<tr class="${S.selCal===v?'sel':''}"><td><button class="btn small ghost" data-sel="${esc(v)}" style="padding:3px 6px">${esc(v)}</button></td>
+        ${['full','cross','non'].map(k=>`<td><input class="inp ${ok?'':'bad'}" type="number" step="0.01" data-an="${esc(v)}" data-k="${k}" value="${a[k]}"></td>`).join('')}
+        <td class="muted">${src}</td><td class="r">${pin}</td><td class="r">${at}</td></tr>`;
+    }).join('');
+    return todo(`<p>The recommended settings are already filled in. Leave the tick box on and click Continue.</p><p>Only change the numbers if you have a clear reason. Click a variable’s name to see its curve.</p>`)+
+      `<div class="fields"><button class="btn small" id="allpct">${S.mode==='raw'?`Use recommended (scale ${defaultAnchors().full} / ${defaultAnchors().cross} / ${defaultAnchors().non}; percentiles for standardised scores)`:'Use recommended: 95 / 50 / 5 percentiles'}</button>
+      ${S.mode==='raw'?'<button class="btn small" id="allpctonly">Use 95 / 50 / 5 percentiles for all</button>':''}<button class="btn small" id="allpct90">Robustness check: 90 / 50 / 10 percentiles</button></div>
+      <div class="curvebox" id="curve"></div>
+      <div class="scroll"><table><thead><tr><th>Variable</th><th>Clearly high (0.95)</th><th>Middle point (0.5)</th><th>Clearly low (0.05)</th><th>Setting</th><th class="r">Share in the high group</th><th class="r">At the middle</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <label class="toggle"><input type="checkbox" id="fix" ${S.fix05?'checked':''}> Keep respondents who sit exactly at the middle point (recommended)</label>
+      <label class="field" style="max-width:520px">Conversion formula<select class="inp" id="calstd" style="width:auto"><option value="fsqca" ${S.calStd!=='r'?'selected':''}>Same as fsQCA 4.x software, Ragin’s method (recommended)</option><option value="r" ${S.calStd==='r'?'selected':''}>Same as the R QCA package</option></select><span>The two differ only slightly: clearly high becomes 0.953 in fsQCA and 0.950 in R. Pick the one your field’s papers usually cite.</span></label>
+      <div><button class="btn small" id="copycal">Copy converted scores</button> <span class="note">For checking the results in fsQCA 4.0 or R.</span></div>`;
+  },
+  bind(){
+    const used=[...S.conditions,S.outcome];
+    if(!used.includes(S.selCal)) S.selCal=S.outcome;
+    drawCurve();
+    $$('[data-sel]').forEach(el=>el.onclick=()=>{ S.selCal=el.dataset.sel; render(); });
+    $$('[data-an]').forEach(el=>{
+      el.oninput=()=>{ S.calib[el.dataset.an][el.dataset.k]=num(el.value); S.calibSrc[el.dataset.an]='custom'; if(S.selCal===el.dataset.an) drawCurve(); };
+      el.onchange=()=>{ S.selCal=el.dataset.an; S.overrides={}; render(); };
+    });
+    $('#allpct').onclick=()=>{ vars().forEach(setRecommended); S.overrides={}; render(); toast('Recommended settings applied'); };
+    const ap5=$('#allpctonly'); if(ap5) ap5.onclick=()=>{ vars().forEach(v=>{ S.calib[v]=pctAnchors(v); S.calibSrc[v]='pct'; }); S.overrides={}; render(); };
+    $('#allpct90').onclick=()=>{ vars().forEach(v=>{ S.calib[v]=pctAnchors(v,.9,.1); S.calibSrc[v]='pct90'; }); S.overrides={}; render(); toast('Robustness settings applied: 90 / 50 / 10'); };
+    $('#fix').onchange=e=>{ S.fix05=e.target.checked; render(); };
+    $('#calstd').onchange=e=>{ S.calStd=e.target.value; S.overrides={}; render(); };
+    $('#copycal').onclick=()=>{
+      const vs=vars().filter(v=>validAnchors(S.calib[v])); const cal=Object.fromEntries(vs.map(v=>[v,calibrated(v)]));
+      const lines=['case\t'+vs.join('\t')].concat(S.raw.map((_,i)=>(i+1)+'\t'+vs.map(v=>Number.isFinite(cal[v][i])?cal[v][i].toFixed(4):'').join('\t')));
+      copyText(lines.join('\n'),'Converted scores');
+    };
+  }
+},
+{ title:'Must-have factors',
+  guide:`<h3>What this step is</h3><p>It checks whether any factor is a ${TM.musthave()}: something the result almost never happens without. For example, “high BVC hardly ever occurs without high HAIC.”</p><h3>How to read it</h3><p>A ${TM.rel('reliability')} of 0.90 or more means must-have. The ${TM.relev('relevance')} column guards against trivial cases: a factor that nearly everyone has can look essential without really being so.</p><h3>Usual finding</h3><p>With survey data, most factors are not must-haves. That is normal, and you simply report it.</p>`,
+  render(){
+    const d=analysisData();
+    const rows=d.names.flatMap((n,j)=>[{n,hi:true,X:d.conds[j]},{n,hi:false,X:d.conds[j].map(v=>1-v)}]).map(r=>Object.assign(r,necessity(r.X,d.Y)));
+    const nec=rows.filter(r=>r.cons>=0.9&&r.ron>=0.5), triv=rows.filter(r=>r.cons>=0.9&&r.ron<0.5);
+    const summary= nec.length? `<div class="callout ok"><b>${nec.map(r=>(r.hi?'High ':'Low ')+esc(r.n)).join(', ')}</b> ${nec.length>1?'are must-have factors':'is a must-have factor'} for ${esc(d.plainOut)}: the result almost never occurs without ${nec.length>1?'them':'it'}. Report this in your paper.</div>`
+      : `<div class="callout info">None of the factors is a must-have for ${esc(d.plainOut)}. This is common with survey data. Report it in one sentence and continue.</div>`;
+    return flipBar(d)+todo(`<p>Nothing to enter. Read the summary below, then click Continue.</p>`)+summary+
+      (triv.length?`<div class="callout warn">${triv.map(r=>(r.hi?'High ':'Low ')+esc(r.n)).join(', ')} passes the must-have test, but its relevance is low, so it is probably trivial. Mention it with that caveat.</div>`:'')+
+      `<div class="scroll"><table><thead><tr><th>Factor</th><th class="r">${TM.rel('Reliability')}</th><th class="r">${TM.share('Share explained')}</th><th class="r">${TM.relev('Relevance')}</th><th>Verdict</th></tr></thead><tbody>
+      ${rows.map(r=>{ const ok=r.cons>=0.9; return `<tr><td><b class="${r.hi?'bit1':'bit0'}">${r.hi?'High':'Low'} ${esc(r.n)}</b> <span class="note">(${r.hi?'':'~'}${esc(r.n)})</span></td><td class="r">${f3(r.cons)}</td><td class="r">${f3(r.cov)}</td><td class="r">${f3(r.ron)}</td><td>${ok?(r.ron<0.5?'<span style="color:var(--warn)">Must-have, but probably trivial</span>':'<span style="color:var(--ok);font-weight:600">Must-have</span>'):'<span class="muted">Not a must-have</span>'}</td></tr>`; }).join('')}
+      </tbody></table></div>${d.dropped?`<p class="note">${d.dropped} respondents with missing values were left out.</p>`:''}`;
+  },
+  bind(){ bindFlip(); }
+},
+{ title:'Combination table',
+  guide:`<h3>What this step is</h3><p>Every respondent has a pattern of high and low factors, such as “high AAIR, high HAIC, low AIGM”. The ${TM.table()} lists each pattern, how many respondents have it, and whether it reliably goes with the result.</p><h3>The three settings</h3><p><b>${TM.minn('Minimum respondents')}</b>: patterns with fewer respondents are set aside as too rare to trust. SaNaSoft picks a value that keeps at least 80% of respondents.</p><p><b>${TM.rel('Reliability')} cutoff</b>: 0.80 is the usual published value.</p><p><b>${TM.clean('Clean-signal')} cutoff</b>: 0.70 is a safe value. It stops patterns that lead to both high and low results from counting.</p><h3>Changing a row</h3><p>You can click “Yes” or “No” to change a row by hand, but only with a reason you could defend to a reviewer. Changed rows are outlined.</p>`,
+  render(){
+    const {d,tt,total,map,esa}=currentTT();
+    const rowsAll=tt.rows.filter(r=>r.n>0);
+    const byN=[...rowsAll].sort((a,b)=>b.n-a.n);
+    let cum=0; const cumMap={}; byN.forEach(r=>{ cum+=r.n; cumMap[r.idx]=cum/total; });
+    const rows=S.ttSort==='n'?byN:[...rowsAll].sort((a,b)=>(b.incl-a.incl)||(b.n-a.n));
+    const kept=rowsAll.filter(r=>r.n>=S.freq).reduce((s,r)=>s+r.n,0);
+    const pos=rowsAll.filter(r=>map[r.idx]===1).length;
+    const rf=recFreq(tt.rows,total), isRec=S.freq===rf&&S.incl===0.8&&S.pri===0.7;
+    return flipBar(d)+todo(`<p>${isRec?'The recommended settings are already applied. Click Continue.':'You have changed the settings. Click “Use recommended settings” to go back to them.'}</p>
+      <p>For your ${total} respondents SaNaSoft recommends a minimum of <b>${rf}</b> respondents per pattern, a reliability cutoff of <b>0.80</b> and a clean-signal cutoff of <b>0.70</b>.</p>`)+
+      `<div class="fields">
+      <label class="field">${TM.minn('Minimum respondents')}<input class="inp" id="freq" type="number" min="1" step="1" value="${S.freq}"></label>
+      <label class="field">${TM.rel('Reliability')} cutoff<input class="inp" id="incl" type="number" min="0" max="1" step="0.01" value="${S.incl}"></label>
+      <label class="field">${TM.clean('Clean-signal')} cutoff<input class="inp" id="pri" type="number" min="0" max="1" step="0.01" value="${S.pri}"></label>
+      <button class="btn small" id="rec" ${isRec?'disabled':''}>Use recommended settings</button>
+      <label class="field">Sort by<select class="inp" id="sort" style="width:auto"><option value="n" ${S.ttSort==='n'?'selected':''}>Respondents</option><option value="incl" ${S.ttSort==='incl'?'selected':''}>Reliability</option></select></label></div>
+      <div class="callout ${kept/total>=0.8?'ok':'warn'}">The patterns kept cover ${kept} of ${total} respondents (${pc(kept/total)}${kept/total>=0.8?', above the 80% target':', below the 80% target: lower the minimum'}). ${pos} pattern${pos===1?' leads':'s lead'} reliably to ${esc(d.plainOut)}.${tt.ambiguous?` ${tt.ambiguous} respondents sit exactly at a middle point and are left out; turn the tick box on in step 4 to keep them.`:''}</div>
+      <div class="scroll"><table><thead><tr>${d.names.map(n=>`<th class="c">${esc(n)}</th>`).join('')}<th class="r">Respondents</th><th class="r">Running total</th><th class="r">${TM.rel('Reliability')}</th><th class="r">${TM.clean('Clean signal')}</th><th class="c">Leads to ${esc(d.plainOut)}?</th></tr></thead><tbody>
+      ${rows.map(r=>{ const m=map[r.idx], rem=m===null, ovr=(r.idx in S.overrides)&&!rem;
+        return `<tr class="${rem?'faded':''}">${r.str.split('').map(b=>`<td class="c ${b==='1'?'bit1':'bit0'}">${b==='1'?'High':'Low'}</td>`).join('')}
+        <td class="r">${r.n}</td><td class="r">${pc(cumMap[r.idx])}</td><td class="r">${f3(r.incl)}</td><td class="r">${f3(r.pri)}</td>
+        <td class="c">${rem?'<span class="muted">Too few</span>':`<button class="outbtn ${m===1?'one':'zero'} ${ovr?'ovr':''}" data-idx="${r.idx}" data-v="${m}">${m===1?'Yes':'No'}</button>`}</td></tr>`; }).join('')}
+      </tbody></table></div>
+      <p class="note">${2**d.names.length-rowsAll.length} other patterns have no respondents at all. Rows marked “Too few” are set aside.</p>
+      <div class="subblock"><label class="toggle"><input type="checkbox" id="esa" ${S.esa?'checked':''}> Block unrealistic assumptions (${tip('Enhanced Standard Analysis','Schneider & Wagemann (2012). It stops fsQCA from making assumptions about rare patterns that contradict each other or contradict a must-have factor.')}, recommended)</label>
+      <p class="note">To simplify recipes, fsQCA makes assumptions about patterns with too few respondents. With this on, SaNaSoft refuses assumptions that would be used both for high and for low ${esc(S.outcome)} (a contradiction), and assumptions that ignore a must-have factor.${S.esa?` For this analysis it blocked <b>${esa.csa.length}</b> contradictory assumption${esa.csa.length===1?'':'s'} and <b>${esa.necRows.filter(x=>!esa.csa.includes(x)).length}</b> that ignore${esa.necRows.length===1?'s':''} a must-have factor.`:''}</p></div>`;
+  },
+  bind(){
+    bindFlip();
+    $('#freq').onchange=e=>{ S.freq=Math.max(1,Math.round(num(e.target.value))||1); S.freqAuto=false; S.overrides={}; render(); };
+    $('#incl').onchange=e=>{ S.incl=num(e.target.value); S.overrides={}; render(); };
+    $('#pri').onchange=e=>{ S.pri=num(e.target.value); S.overrides={}; render(); };
+    $('#rec').onclick=()=>{ S.freqAuto=true; S.incl=0.8; S.pri=0.7; S.overrides={}; render(); toast('Recommended settings applied'); };
+    $('#sort').onchange=e=>{ S.ttSort=e.target.value; render(); };
+    $('#esa').onchange=e=>{ S.esa=e.target.checked; S.robust=null; S.predict=null; render(); };
+    $$('.outbtn').forEach(el=>el.onclick=()=>{ S.overrides[+el.dataset.idx]=el.dataset.v==='1'?0:1; render(); });
+  }
+},
+{ title:'Recipes',
+  guide:`<h3>What this step is</h3><p>SaNaSoft simplifies the reliable patterns into ${TM.recipe('recipes')}: combinations of factors that lead to the result. There can be several recipes, meaning different groups of respondents reach the same result in different ways.</p><h3>${TM.expect('What your theory expects')}</h3><p>For each factor, say whether it helps when high or when low. Use your SmartPLS results: a positive path means “helps when high”. Choose “Not sure” if theory is unclear.</p><h3>Reading the chart</h3><p>A large dot is a ${TM.key()}, with strong evidence. A small dot is a ${TM.support()}. A crossed circle means the factor must be low. A blank means it doesn’t matter in that recipe.</p><h3>Benchmarks</h3><p>Overall ${TM.rel('reliability')} should be at least 0.80. ${TM.share('Share explained')} has no fixed cutoff, but report it.</p>`,
+  render(){
+    const {d,tt,map,esa}=currentTT(); window._esa=esa;
+    const de=d.names.map(dirFor);
+    const res=solveTruthTable(d.conds,d.Y,tt.rows,map,de,S.modelChoice[sig()]);
+    const exp=`<div class="subblock"><div class="sub">${TM.expect('What your theory expects')}</div><div class="scroll"><table><tbody>${d.names.map(n=>`<tr><td><b>${esc(n)}</b></td><td><div class="seg" data-de="${esc(n)}">${[['1','Helps when high'],['0','Helps when low'],['-','Not sure']].map(([v,l])=>`<button data-v="${v}" class="${dirFor(n)===v?'on':''}">${l}</button>`).join('')}</div></td></tr>`).join('')}</tbody></table></div></div>`;
+    const guideBox=todo(`<p>${S.negate?`For low ${esc(S.outcome)}, SaNaSoft assumes each factor helps when low: the reverse of your model.`:'SaNaSoft assumes each factor helps when high, which matches positive paths in SmartPLS.'} If a path in your SmartPLS model was negative, switch that factor to “${S.negate?'Helps when high':'Helps when low'}”. Otherwise, leave these as they are.</p><p>Then read the recipes and the summary. Copy the table and the paragraph into your paper.</p>`);
+    const next=nextButtons();
+    if(!res) return flipBar(d)+guideBox+exp+`<div class="callout warn">No pattern passed the settings in step 6, so there are no recipes for ${esc(d.plainOut)}. That is itself a finding: none of the combinations reliably leads to ${esc(d.plainOut)}. Report it rather than lowering the cutoffs just to get a result.</div>`+next;
+    window._last={d,res,de,tt,map};
+    const I=res.inter;
+    const chart=`<div class="subblock"><div class="solhead"><div class="sub">Recipes for ${esc(d.plainOut)}</div><button class="btn small" id="copychart">Copy table for your paper</button></div>
+      <div class="scroll"><table class="chart"><thead><tr><th>Factor</th>${I.terms.map((_,i)=>`<th class="c">Recipe ${i+1}</th>`).join('')}</tr></thead><tbody>
+      ${d.names.map((n,j)=>`<tr class="symrow"><td>${esc(n)}</td>${I.terms.map(t=>`<td class="c">${symbol(t.term[j],I.core.get(t.term).has(j))}</td>`).join('')}</tr>`).join('')}
+      <tr class="metric"><td>${TM.rel('Reliability')}</td>${I.terms.map(t=>`<td class="c">${f3(t.incl)}</td>`).join('')}</tr>
+      <tr class="metric"><td>${TM.share('Share explained')}</td>${I.terms.map(t=>`<td class="c">${f3(t.cov)}</td>`).join('')}</tr>
+      <tr class="metric"><td>${TM.uniq('Unique share')}</td>${I.terms.map(t=>`<td class="c">${f3(t.ucov)}</td>`).join('')}</tr>
+      <tr class="metric"><td>Overall reliability</td><td class="c" colspan="${I.terms.length}">${f3(I.sol.incl)}</td></tr>
+      <tr class="metric"><td>Overall share explained</td><td class="c" colspan="${I.terms.length}">${f3(I.sol.cov)}</td></tr>
+      </tbody></table></div>
+      <div class="legend"><span>${symbol('1',true)} High, ${TM.key()}</span><span>${symbol('1',false)} High, ${TM.support()}</span><span>${symbol('0',true)} Low, key ingredient</span><span>${symbol('0',false)} Low, supporting ingredient</span><span>Blank: doesn’t matter</span></div></div>`;
+    const plain=`<div class="subblock"><div class="sub">What this means</div><div class="plain">${I.terms.map((t,i)=>{
+        const core=I.core.get(t.term), parts=termPlain(t.term,d.names);
+        const keyI=[...core].map(j=>(t.term[j]==='1'?'high ':'low ')+d.names[j]);
+        const supI=parts.filter(p=>!keyI.includes(p));
+        return `<p><b>Recipe ${i+1}:</b> ${esc(lst(parts))} ${parts.length>1?'together lead':'leads'} to ${esc(d.plainOut)}. Its reliability is ${f2(t.incl)} ${t.incl>=0.8?'(above the 0.80 benchmark)':'(below the 0.80 benchmark)'}, and it accounts for about ${pc(t.cov)} of ${esc(d.plainOut)}.${keyI.length&&supI.length?` Key ingredient${keyI.length>1?'s':''}: ${esc(lst(keyI))}; supporting: ${esc(lst(supI))}.`:''}</p>`; }).join('')}
+      <p>${I.terms.length>1?`Together, the ${I.terms.length} recipes`:'This recipe'} account${I.terms.length>1?'':'s'} for about ${pc(I.sol.cov)} of ${esc(d.plainOut)}, with overall reliability ${f2(I.sol.incl)}.${I.terms.length>1?' Several recipes means different groups of respondents reach the same result in different ways.':''}</p>
+      ${I.sol.incl<0.8?'<div class="callout warn">Overall reliability is below 0.80, so treat these recipes with caution.</div>':''}</div></div>`;
+    const detail=(title,tech,s)=>`<div class="subblock"><div class="sub">${title} <span class="note">(${tech})</span></div>${s.ambiguous?`<p class="solnote">${s.nModels} equally simple versions fit; the first is shown. Mention this “model ambiguity” in your paper.</p>`:''}
+      <div class="scroll"><table><thead><tr><th>Configuration</th><th class="r">Raw coverage</th><th class="r">Unique coverage</th><th class="r">Consistency</th></tr></thead><tbody>
+      ${s.terms.map(t=>`<tr><td><b>${esc(termLabel(t.term,d.names))}</b></td><td class="r">${f3(t.cov)}</td><td class="r">${f3(t.ucov)}</td><td class="r">${f3(t.incl)}</td></tr>`).join('')}
+      <tr><td class="muted">Solution</td><td class="r">${f3(s.sol.cov)}</td><td></td><td class="r">${f3(s.sol.incl)}</td></tr></tbody></table></div></div>`;
+    return flipBar(d)+guideBox+exp+versionsBox(res)+chart+plain+extras(d,res)+
+      `<div class="subblock"><div class="solhead"><div class="sub">Paragraph for your methods section</div><button class="btn small" id="copymeth">Copy paragraph</button></div>${(()=>{ const reg=citeRegistry(S.exp.style); const t=methodsText(d,res,de,tt,map,reg); window._methRefs=refList(reg); return `<p class="methods" id="meth">${esc(t)}</p><div class="reflist"><p><b>References</b></p>${window._methRefs.map(r=>`<p>${esc(r.prefix)}${segHTML(r.segs)}</p>`).join('')}</div>`; })()}<p class="note">Papers use the technical terms, so this paragraph does too. Citations follow the reference style chosen under “Download your results” (now: ${REF_STYLES.find(x=>x[0]===S.exp.style)[1]}). “Copy paragraph” copies the references too.</p></div>
+      <details class="adv"><summary>Technical details for your paper</summary><p class="note">fsQCA papers usually report the intermediate solution, with core conditions taken from the parsimonious solution. SaNaSoft’s recipes above are the intermediate solution.</p>
+      ${detail('Recommended solution','intermediate',I)}${detail('Simplest solution','parsimonious',res.pars)}${detail('Most detailed solution','complex',res.complex)}</details>`+next;
+  },
+  bind(){
+    bindFlip(); bindNext(); bindExtras();
+    $$('[data-de]').forEach(seg=>seg.querySelectorAll('button').forEach(b=>b.onclick=()=>{ S.dirExp[seg.dataset.de]=b.dataset.v; render(); }));
+    const cc=$('#copychart'); if(cc) cc.onclick=()=>{
+      const {d,res}=window._last, I=res.inter;
+      const sym=(c,core)=>c==='1'?(core?'●':'•'):c==='0'?(core?'⨂':'⊗'):'';
+      const lines=['Condition\t'+I.terms.map((_,i)=>'Configuration '+(i+1)).join('\t')];
+      d.names.forEach((n,j)=>lines.push(n+'\t'+I.terms.map(t=>sym(t.term[j],I.core.get(t.term).has(j))).join('\t')));
+      lines.push('Raw coverage\t'+I.terms.map(t=>f3(t.cov)).join('\t'));
+      lines.push('Unique coverage\t'+I.terms.map(t=>f3(t.ucov)).join('\t'));
+      lines.push('Consistency\t'+I.terms.map(t=>f3(t.incl)).join('\t'));
+      lines.push('Solution consistency\t'+f3(I.sol.incl)); lines.push('Solution coverage\t'+f3(I.sol.cov));
+      lines.push(''); lines.push('Outcome: '+d.out+'. ● core condition present; • peripheral condition present; ⨂ core condition absent; ⊗ peripheral condition absent; blank: does not matter.');
+      copyText(lines.join('\n'),'Table');
+    };
+    const cm=$('#copymeth'); if(cm) cm.onclick=()=>copyText($('#meth').textContent+'\n\nReferences\n'+(window._methRefs||[]).map(r=>r.prefix+segText(r.segs)).join('\n'),'Paragraph and references');
+  }
+}
+];
+
+
+// ---------- validation-grade extras: model versions, cases, XY plots, robustness, predictive validity, report ----------
+function sig(){ return JSON.stringify([S.esa,S.outcome,S.negate,S.conditions,S.freq,S.incl,S.pri,S.calStd,S.fix05,S.conditions.concat([S.outcome]).map(v=>S.calib[v]),S.overrides,S.conditions.map(dirFor)]); }
+function versionsBox(res){
+  const c=res.complex, p=res.pars;
+  if(c.nModels<2 && p.nModels<2) return '';
+  const opt=(n,sel,cap)=>Array.from({length:Math.min(n,50)},(_,i)=>`<option value="${i}" ${i===sel?'selected':''}>Version ${i+1}</option>`).join('')+(n>50?'<option disabled>…</option>':'');
+  return `<div class="subblock"><div class="sub">Other equally good versions</div>
+    <div class="callout info">Your data fit several equally simple versions of the solution: ${c.nModels} for the ${tip('most detailed','complex solution')} and ${p.nModels}${p.capped?'+':''} for the ${tip('simplest','parsimonious solution')}. This is called model ambiguity and should be mentioned in your paper. Pick the version that fits your theory best; the recipes update.</div>
+    <div class="fields">${c.nModels>1?`<label class="field">Most detailed solution<select class="inp" id="vc" style="width:auto">${opt(c.nModels,c.idx)}</select></label>`:''}
+    ${p.nModels>1?`<label class="field">Simplest solution<select class="inp" id="vp" style="width:auto">${opt(p.nModels,p.idx)}</select></label>`:''}</div></div>`;
+}
+function caseGroups(d,term){
+  const M=termMembership(term,d.conds); const typ=[], dev=[];
+  M.forEach((m,i)=>{ if(m>0.5){ (d.Y[i]>0.5?typ:dev).push(d.idx[i]+1); } });
+  return {M,typ,dev};
+}
+function xyPlot(d,term,label){
+  const {M}=caseGroups(d,term), W=360,H=320,L=42,B=38,T=14,R=12;
+  const X=x=>L+x*(W-L-R), Yp=y=>T+(1-y)*(H-T-B);
+  const pts=M.map((m,i)=>{ const y=d.Y[i]; const col= m>0.5&&y>0.5?'var(--in)': m>0.5?'var(--out)':'var(--muted)'; return `<circle cx="${X(m).toFixed(1)}" cy="${Yp(y).toFixed(1)}" r="3" fill="${col}" opacity="${m>0.5?0.85:0.35}"/>`; }).join('');
+  const st=fitStats(M,d.Y);
+  return `<svg viewBox="0 0 ${W} ${H}" style="max-width:420px;width:100%" role="img" aria-label="XY plot for ${esc(label)}">
+    <rect x="${L}" y="${T}" width="${W-L-R}" height="${H-T-B}" fill="none" stroke="var(--line)"/>
+    <line x1="${X(0)}" y1="${Yp(0)}" x2="${X(1)}" y2="${Yp(1)}" stroke="var(--ink)" stroke-dasharray="4 4"/>
+    <line x1="${X(.5)}" y1="${T}" x2="${X(.5)}" y2="${Yp(0)}" stroke="var(--line)"/><line x1="${L}" y1="${Yp(.5)}" x2="${X(1)}" y2="${Yp(.5)}" stroke="var(--line)"/>
+    ${pts}
+    ${[0,.5,1].map(v=>`<text x="${X(v)}" y="${H-B+16}" font-size="11" text-anchor="middle" fill="var(--muted)">${v}</text><text x="${L-6}" y="${Yp(v)+4}" font-size="11" text-anchor="end" fill="var(--muted)">${v}</text>`).join('')}
+    <text x="${(W+L)/2}" y="${H-4}" font-size="11.5" text-anchor="middle" fill="var(--muted)">Membership in the recipe</text>
+    <text x="12" y="${(H-B)/2}" font-size="11.5" text-anchor="middle" fill="var(--muted)" transform="rotate(-90 12 ${(H-B)/2})">Membership in ${esc(d.out)}</text></svg>
+    <p class="note">Each dot is a respondent. Points on or above the dashed line fit the recipe (reliability ${f2(st.incl)}). Blue dots follow the recipe and have the result; plum dots follow it but don’t have the result.</p>`;
+}
+function runWith(o){
+  const names=[...S.conditions], out=S.outcome;
+  const A=v=> !o.anch? S.calib[v] : S.std[v]? (o.anch==='90'?pctAnchors(v,.9,.1):pctAnchors(v,.8,.2)) : (o.anch==='90'?defaultAnchors(-0.5):defaultAnchors(0.5));
+  const cal={}; [...names,out].forEach(n=>{ const a=A(n); cal[n]=S.scores[n].map(x=>{ let v=cv(x,a); if(S.fix05&&v===0.5) v=0.501; return v; }); });
+  let idx=[]; for(let i=0;i<S.raw.length;i++) if([...names,out].every(n=>Number.isFinite(cal[n][i]))) idx.push(i);
+  if(o.rows) idx=o.rows;
+  const conds=names.map(n=>idx.map(i=>cal[n][i])); let Y=idx.map(i=>cal[out][i]); if(S.negate) Y=Y.map(v=>1-v);
+  const tt=truthTable(conds,Y), total=idx.length-tt.ambiguous;
+  const f=o.freq!=null?o.freq:(S.freqAuto?recFreq(tt.rows,total):S.freq);
+  const incl=o.incl??S.incl, pri=o.pri??S.pri, map={};
+  tt.rows.forEach(r=>{ map[r.idx]= r.n<f?null:(r.incl>=incl&&r.pri>=pri?1:0); });
+  applyESA(conds,Y,tt.rows,map,f,incl,pri);
+  const res=solveTruthTable(conds,Y,tt.rows,map,names.map(dirFor));
+  return {res,names,f,incl,pri,conds,Y,cal,idx};
+}
+function recipeKey(res){ return res? res.inter.terms.map(t=>t.term).sort().join('|') : ''; }
+function runRobustness(){
+  const base=runWith({}); const f0=base.f;
+  const allStd=[...S.conditions,S.outcome].every(v=>S.std[v]), n1=defaultAnchors(-0.5), w1=defaultAnchors(0.5);
+  const V=[['Your settings',{}],[allStd?'Reference points 90 / 50 / 10':`Narrower reference points (${allStd?'':`scale ${n1.full} / ${n1.cross} / ${n1.non}`}${[...S.conditions,S.outcome].some(v=>S.std[v])?'; percentiles 90 / 50 / 10':''})`,{anch:'90'}],[allStd?'Reference points 80 / 50 / 20':`Wider reference points (scale ${w1.full} / ${w1.cross} / ${w1.non}${[...S.conditions,S.outcome].some(v=>S.std[v])?'; percentiles 80 / 50 / 20':''})`,{anch:'80'}],
+    ['Reliability cutoff 0.75',{incl:0.75}],['Reliability cutoff 0.85',{incl:0.85}],
+    ['Clean-signal cutoff 0.60',{pri:0.6}],['Clean-signal cutoff 0.75',{pri:0.75}],
+    [`Minimum respondents ${f0+1}`,{freq:f0+1}]].concat(f0>1?[[`Minimum respondents ${f0-1}`,{freq:f0-1}]]:[]);
+  const k0=recipeKey(base.res);
+  S.robust=V.map(([label,o])=>{ const r=runWith(o); const k=recipeKey(r.res);
+    return {label, recipes:r.res?r.res.inter.terms.map(t=>termLabel(t.term,r.names)):[], incl:r.res?r.res.inter.sol.incl:NaN, cov:r.res?r.res.inter.sol.cov:NaN, same:k===k0}; });
+}
+function runPredictive(){
+  const all=runWith({}).idx.slice(); const rnd=mulberry32(20240901);
+  for(let i=all.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); [all[i],all[j]]=[all[j],all[i]]; }
+  const h=Math.floor(all.length/2), A=all.slice(0,h).sort((a,b)=>a-b), B=all.slice(h).sort((a,b)=>a-b);
+  const ra=runWith({rows:A}), rb=runWith({rows:B});
+  if(!ra.res){ S.predict={none:true,nA:A.length,nB:B.length}; return; }
+  const terms=ra.res.inter.terms.map(t=>t.term);
+  const Ms=terms.map(t=>termMembership(t,rb.conds));
+  const per=terms.map((t,i)=>({label:termLabel(t,ra.names), ...fitStats(Ms[i],rb.Y)}));
+  const Ssol=rb.Y.map((_,i)=>Math.max(...Ms.map(M=>M[i])));
+  S.predict={nA:A.length,nB:B.length,per,sol:fitStats(Ssol,rb.Y),train:ra.res.inter.sol};
+}
+function extras(d,res){
+  const I=res.inter; const sel=Math.min(S.xySel,I.terms.length-1);
+  const groups=I.terms.map(t=>caseGroups(d,t.term));
+  const casesT=`<div class="scroll"><table><thead><tr><th>Recipe</th><th class="r">Respondents who follow it</th><th class="r">…and have ${esc(d.plainOut)}</th><th class="r">…but don’t (exceptions)</th><th></th></tr></thead><tbody>
+    ${I.terms.map((t,i)=>{ const g=groups[i]; return `<tr><td><b>Recipe ${i+1}</b> <span class="note">${esc(termLabel(t.term,d.names))}</span></td><td class="r">${g.typ.length+g.dev.length}</td><td class="r">${g.typ.length}</td><td class="r">${g.dev.length}</td><td><button class="btn small ghost" data-cases="${i}">Copy row numbers</button></td></tr>`; }).join('')}</tbody></table></div>`;
+  const rob=S.robust?`<div class="scroll"><table><thead><tr><th>Check</th><th>Recipes found</th><th class="r">Overall reliability</th><th class="r">Overall share explained</th><th>Same recipes?</th></tr></thead><tbody>
+    ${S.robust.map(r=>`<tr><td>${esc(r.label)}</td><td style="white-space:normal">${r.recipes.length?r.recipes.map(esc).join(' + '):'<span class="muted">none</span>'}</td><td class="r">${f3(r.incl)}</td><td class="r">${f3(r.cov)}</td><td>${r.same?'<span style="color:var(--ok);font-weight:600">Same</span>':'<span style="color:var(--warn)">Changed</span>'}</td></tr>`).join('')}</tbody></table></div>
+    <div class="callout ${S.robust.slice(1).every(r=>r.same)?'ok':'info'}">${S.robust.slice(1).filter(r=>r.same).length} of ${S.robust.length-1} checks give exactly the same recipes. ${S.robust.slice(1).every(r=>r.same)?'Your results are robust: report this table in an appendix.':'Where recipes change, look at whether the key ingredients stay the same; small changes are normal. Report this table and discuss the differences briefly.'}</div>`:'';
+  const pr=S.predict? (S.predict.none?`<div class="callout warn">No recipes were found in the first half of the sample (${S.predict.nA} respondents), so the test could not run. This usually happens with small samples.</div>`:
+    `<div class="scroll"><table><thead><tr><th>Recipe found in half A (${S.predict.nA} respondents)</th><th class="r">${TM.rel('Reliability')} in half B</th><th class="r">${TM.share('Share explained')} in half B</th></tr></thead><tbody>
+    ${S.predict.per.map(p=>`<tr><td>${esc(p.label)}</td><td class="r">${f3(p.incl)}</td><td class="r">${f3(p.cov)}</td></tr>`).join('')}
+    <tr><td class="muted">All recipes together</td><td class="r">${f3(S.predict.sol.incl)}</td><td class="r">${f3(S.predict.sol.cov)}</td></tr></tbody></table></div>
+    <div class="callout ${S.predict.sol.incl>=0.8?'ok':'warn'}">${S.predict.sol.incl>=0.8?`The recipes found in one half of your respondents also hold in the other half (reliability ${f2(S.predict.sol.incl)}, above 0.80). This supports their predictive validity (Pappas & Woodside, 2021).`:`In the other half of the sample the recipes’ reliability is ${f2(S.predict.sol.incl)}, below 0.80, so their predictive validity is limited. Report this honestly.`}</div>`):'';
+  return `<div class="subblock"><div class="sub">Who follows each recipe</div><p class="note">A respondent “follows” a recipe when their membership in it is above 0.5. Exceptions are worth a look: they can suggest missing factors.</p>${casesT}</div>
+    <div class="subblock"><div class="solhead"><div class="sub">XY plot</div>${I.terms.length>1?`<select class="inp" id="xysel" style="width:auto">${I.terms.map((_,i)=>`<option value="${i}" ${i===sel?'selected':''}>Recipe ${i+1}</option>`).join('')}</select>`:''}</div>${xyPlot(d,I.terms[sel].term,'Recipe '+(sel+1))}</div>
+    <div class="subblock"><div class="solhead"><div class="sub">Robustness check</div><button class="btn small ${S.robust?'':'primary'}" id="robust">${S.robust?'Run again':'Run robustness check'}</button></div><p class="note">Reruns your analysis with different reference points and cutoffs, and shows whether the recipes stay the same. Reviewers increasingly expect this.</p>${rob}</div>
+    <div class="subblock"><div class="solhead"><div class="sub">Predictive validity test</div><button class="btn small ${S.predict?'':'primary'}" id="predict">${S.predict?'Run again':'Run predictive test'}</button></div><p class="note">Splits your respondents randomly into two halves, finds the recipes in the first half, and checks how well they predict the result in the second half.</p>${pr}</div>
+    ${exportBox()}
+    <div class="subblock"><div class="solhead"><div class="sub">Full results report</div><button class="btn small" id="report">Copy full report</button></div><p class="note">Copies everything for this analysis (settings, must-have test, combination table summary, recipes, and any robustness and predictive results) as text you can paste into Word.</p></div>`;
+}
+function fullReport(d,res){
+  const I=res.inter, L=[];
+  L.push(`SaNaSoft fsQCA report: ${d.out} (${S.planName||'custom analysis'})`,`Respondents: ${d.N}`,'');
+  L.push('CALIBRATION'); [...d.names,S.outcome].forEach(v=>{ const a=S.calib[v]; L.push(`${v}: full membership ${a.full}, crossover ${a.cross}, full non-membership ${a.non}`); });
+  L.push(`Formula: ${S.calStd==='r'?'R QCA (0.95)':'fsQCA 4.x (0.953)'}; 0.5 recoded to 0.501: ${S.fix05?'yes':'no'}`,'');
+  L.push('NECESSARY CONDITIONS (consistency, coverage, RoN)');
+  d.names.forEach((n,j)=>{ const a=necessity(d.conds[j],d.Y), b=necessity(d.conds[j].map(v=>1-v),d.Y); L.push(`${n}\t${f3(a.cons)}\t${f3(a.cov)}\t${f3(a.ron)}`,`~${n}\t${f3(b.cons)}\t${f3(b.cov)}\t${f3(b.ron)}`); });
+  L.push('',`TRUTH TABLE: frequency threshold ${S.freq}, raw consistency ${S.incl}, PRI ${S.pri}; ${res.nPos} configurations coded 1.`);
+  L.push(S.esa&&window._esa?`Enhanced Standard Analysis: ${window._esa.csa.length} contradictory simplifying assumptions excluded (${window._esa.csa.map(r=>r.split('').map((b,j)=>(b==='0'?'~':'')+d.names[j]).join('*')).join('; ')||'none'}); ${window._esa.necRows.length} remainders contradicting necessary conditions excluded.`:'Enhanced Standard Analysis: off.','');
+  const sol=(t,s)=>{ L.push(t); s.terms.forEach(x=>L.push(`${termLabel(x.term,d.names)}\tconsistency ${f3(x.incl)}\traw coverage ${f3(x.cov)}\tunique coverage ${f3(x.ucov)}`)); L.push(`Solution consistency ${f3(s.sol.incl)}, solution coverage ${f3(s.sol.cov)}`,''); };
+  sol('INTERMEDIATE SOLUTION',I); sol('PARSIMONIOUS SOLUTION',res.pars); sol('COMPLEX SOLUTION',res.complex);
+  L.push('CORE CONDITIONS'); I.terms.forEach((t,i)=>L.push(`Configuration ${i+1}: ${[...I.core.get(t.term)].map(j=>(t.term[j]==='0'?'~':'')+d.names[j]).join(', ')||'none'}`)); L.push('');
+  if(S.robust){ L.push('ROBUSTNESS'); S.robust.forEach(r=>L.push(`${r.label}\t${r.recipes.join(' + ')||'none'}\tconsistency ${f3(r.incl)}\tcoverage ${f3(r.cov)}\t${r.same?'same':'changed'}`)); L.push(''); }
+  if(S.predict&&!S.predict.none){ L.push(`PREDICTIVE VALIDITY (subsample A n=${S.predict.nA}, holdout B n=${S.predict.nB})`); S.predict.per.forEach(p=>L.push(`${p.label}\tholdout consistency ${f3(p.incl)}\tholdout coverage ${f3(p.cov)}`)); L.push(`All: consistency ${f3(S.predict.sol.incl)}, coverage ${f3(S.predict.sol.cov)}`,''); }
+  const reg=citeRegistry(S.exp.style);
+  L.push('METHODS PARAGRAPH',methodsText(d,res,d.names.map(dirFor),truthTable(d.conds,d.Y),null,reg),'','REFERENCES',...refList(reg).map(r=>r.prefix+segText(r.segs)),'',`HOW TO CITE SANASOFT (developed by ${DEVELOPERS})`,softwareCitation());
+  return L.join('\n');
+}
+function bindExtras(){
+  const L=window._last; if(!L||!$('#robust')) return;
+  const vc=$('#vc'), vp=$('#vp');
+  const setC=()=>{ S.modelChoice[sig()]={c:vc?+vc.value:0,p:vp?+vp.value:0}; render(); };
+  if(vc) vc.onchange=setC; if(vp) vp.onchange=setC;
+  $$('[data-cases]').forEach(b=>b.onclick=()=>{ const i=+b.dataset.cases, g=caseGroups(L.d,L.res.inter.terms[i].term); copyText(`Recipe ${i+1} (${termLabel(L.res.inter.terms[i].term,L.d.names)})\nFollow it and have ${L.d.out} (row numbers in your file): ${g.typ.join(', ')||'none'}\nFollow it but do not (exceptions): ${g.dev.join(', ')||'none'}`,'Row numbers'); });
+  const xs=$('#xysel'); if(xs) xs.onchange=()=>{ S.xySel=+xs.value; render(); };
+  $('#robust').onclick=()=>{ runRobustness(); render(); toast('Robustness check finished'); };
+  $('#predict').onclick=()=>{ runPredictive(); render(); toast('Predictive test finished'); };
+  $('#report').onclick=()=>copyText(fullReport(L.d,L.res),'Report');
+  bindExport();
+}
+
+// ---------- software identity and citations ----------
+const APP_VERSION='1.2';
+const SOFTWARE_URL='https://claude.ai/artifact/UZhqVjLjtwhis75rAuUbnS'; // change this one line when SaNaSoft moves to its own website
+const DEVELOPERS='Prof. S. Sabraz Nawaz and Prof. Ghazanfar Ali';
+const REF_STYLES=[['apa','APA 7th edition'],['harvard','Harvard (Cite Them Right)'],['emerald','Emerald (Harvard variant)'],['chicago','Chicago author-date'],['ieee','IEEE'],['vancouver','Vancouver']];
+const REFS={
+  sanasoft:{type:'software',authors:[['Samsudeen','S. N.'],['Ghazanfar','A. A.']],year:2026,title:'SaNaSoft: Guided fsQCA for PLS-SEM latent variable scores'},
+  fiss:{type:'article',authors:[['Fiss','P. C.']],year:2011,title:'Building better causal theories: A fuzzy set approach to typologies in organization research',journal:'Academy of Management Journal',volume:'54',issue:'2',pages:'393–420',doi:'10.5465/amj.2011.60263120'},
+  pappas:{type:'article',authors:[['Pappas','I. O.'],['Woodside','A. G.']],year:2021,title:'Fuzzy-set qualitative comparative analysis (fsQCA): Guidelines for research practice in information systems and marketing',journal:'International Journal of Information Management',volume:'58',issue:'',pages:'102310',doi:'10.1016/j.ijinfomgt.2021.102310'},
+  ragin:{type:'book',authors:[['Ragin','C. C.']],year:2008,title:'Redesigning social inquiry: Fuzzy sets and beyond',publisher:'University of Chicago Press',place:'Chicago'},
+  schneider:{type:'book',authors:[['Schneider','C. Q.'],['Wagemann','C.']],year:2012,title:'Set-theoretic methods for the social sciences: A guide to qualitative comparative analysis',publisher:'Cambridge University Press',place:'Cambridge'}
+};
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const today=()=>{ const d=new Date(); return {d:d.getDate(),m:MONTHS[d.getMonth()],y:d.getFullYear(),mon:MONTHS[d.getMonth()].slice(0,3)}; };
+const tc=t=>{ const small=/^(a|an|and|as|at|but|by|for|in|nor|of|on|or|the|to|via|with)$/i; const w=t.split(' ');
+  const cap=x=>/[A-Z]/.test(x.slice(1))?x:x.charAt(0).toUpperCase()+x.slice(1);
+  return w.map((x,i)=>{ if(/[A-Z]/.test(x.slice(1))&&!x.includes('-')) return x; if(i>0&&i<w.length-1&&small.test(x)&&!w[i-1].endsWith(':')) return x.toLowerCase(); return x.split('-').map(cap).join('-'); }).join(' '); };
+const lowerAfterColon=t=>t.replace(/: ([A-Z])(?=[a-z ])/g,(m,a)=>': '+a.toLowerCase());
+function authorsFor(r,style){
+  const A=r.authors, ns=i=>i.replace(/\s+/g,''), join=(arr,sep,last)=>arr.length<2?arr.join(''):arr.slice(0,-1).join(sep)+last+arr[arr.length-1];
+  if(style==='apa') return join(A.map(([f,i])=>`${f}, ${i}`),', ',A.length===2?', & ':', & ');
+  if(style==='harvard'||style==='emerald') return join(A.map(([f,i])=>`${f}, ${ns(i)}`),', ',' and ');
+  if(style==='chicago') return join(A.map(([f,i],k)=>k===0?`${f}, ${i}`:`${i} ${f}`),', ',A.length===2?', and ':', and ');
+  if(style==='ieee') return join(A.map(([f,i])=>`${i} ${f}`),', ',A.length===2?' and ':', and ');
+  return A.map(([f,i])=>`${f} ${i.replace(/[.\s]/g,'')}`).join(', ');
+}
+function formatRef(key,style){
+  const r=REFS[key], A=authorsFor(r,style), Y=r.year, t=today(), I=x=>({t:x,i:true}), url=SOFTWARE_URL, v=APP_VERSION;
+  const range=/[–-]/.test(r.pages||''), noDot=A.replace(/\.$/,'');
+  if(style==='apa'){
+    if(r.type==='article') return [A,` (${Y}). ${r.title}. `,I(r.journal),', ',I(r.volume),r.issue?`(${r.issue})`:'',`, ${r.pages}. https://doi.org/${r.doi}`];
+    if(r.type==='book') return [A,` (${Y}). `,I(r.title),`. ${r.publisher}.`];
+    return [A,` (${Y}). `,I(r.title),` (Version ${v}) [Computer software]. ${url}`];
+  }
+  if(style==='harvard'){
+    if(r.type==='article') return [A,` (${Y}) ‘${r.title}’, `,I(r.journal),`, ${r.volume}${r.issue?`(${r.issue})`:''}, ${range?'pp.':'p.'} ${r.pages}. Available at: https://doi.org/${r.doi}.`];
+    if(r.type==='book') return [A,` (${Y}) `,I(r.title),`. ${r.place}: ${r.publisher}.`];
+    return [A,` (${Y}) `,I(r.title),` (Version ${v}) [Computer program]. Available at: ${url} (Accessed: ${t.d} ${t.m} ${t.y}).`];
+  }
+  if(style==='emerald'){
+    if(r.type==='article') return [A,` (${Y}), “${r.title}”, `,I(r.journal),`, Vol. ${r.volume}${r.issue?` No. ${r.issue}`:''}, ${range?'pp. '+r.pages.replace('–','-'):r.pages}, doi: ${r.doi}.`];
+    if(r.type==='book') return [A,` (${Y}), `,I(r.title),`, ${r.publisher}, ${r.place}.`];
+    return [A,` (${Y}), “${r.title}”, Version ${v}, available at: ${url} (accessed ${t.d} ${t.m} ${t.y}).`];
+  }
+  if(style==='chicago'){
+    if(r.type==='article') return [`${noDot}. ${Y}. “${tc(r.title)}.” `,I(r.journal),` ${r.volume}${r.issue?` (${r.issue})`:''}: ${r.pages}. https://doi.org/${r.doi}.`];
+    if(r.type==='book') return [`${noDot}. ${Y}. `,I(tc(r.title)),`. ${r.place}: ${r.publisher}.`];
+    return [`${noDot}. ${Y}. `,I(tc(r.title)),`. Version ${v}. ${url}.`];
+  }
+  if(style==='ieee'){
+    if(r.type==='article') return [`${A}, “${r.title},” `,I(r.journal),`, vol. ${r.volume}${r.issue?`, no. ${r.issue}`:''}, ${range?'pp. '+r.pages:'Art. no. '+r.pages}, ${Y}, doi: ${r.doi}.`];
+    if(r.type==='book') return [`${A}, `,I(tc(r.title)),`. ${r.place}: ${r.publisher}, ${Y}.`];
+    return [`${A}, `,I(tc(r.title)),`, version ${v}. (${Y}). [Online]. Available: ${url}`];
+  }
+  if(r.type==='article') return [`${A}. ${lowerAfterColon(r.title)}. ${r.journal}. ${Y};${r.volume}${r.issue?`(${r.issue})`:''}:${r.pages.replace('–','-')}. doi:${r.doi}`];
+  if(r.type==='book') return [`${A}. ${lowerAfterColon(r.title)}. ${r.place}: ${r.publisher}; ${Y}.`];
+  return [`${A}. ${lowerAfterColon(r.title)} [Internet]. Version ${v}. ${Y} [cited ${t.y} ${t.mon} ${t.d}]. Available from: ${url}`];
+}
+function citeRegistry(style){
+  const order=[];
+  const f=key=>{ if(!order.includes(key)) order.push(key); const n=order.indexOf(key)+1, r=REFS[key], a=r.authors.map(x=>x[0]);
+    if(style==='ieee') return `[${n}]`; if(style==='vancouver') return `(${n})`;
+    const names=a.length===1?a[0]:a.length===2?a[0]+(style==='apa'?' & ':' and ')+a[1]:a[0]+' et al.';
+    return style==='chicago'?`(${names} ${r.year})`:`(${names}, ${r.year})`; };
+  f.order=order; f.style=style; return f;
+}
+function refList(reg){
+  const numeric=reg.style==='ieee'||reg.style==='vancouver';
+  let keys=[...reg.order];
+  if(!numeric) keys.sort((a,b)=>REFS[a].authors[0][0].localeCompare(REFS[b].authors[0][0])||REFS[a].year-REFS[b].year);
+  return keys.map(k=>({key:k,num:reg.order.indexOf(k)+1,prefix:reg.style==='ieee'?`[${reg.order.indexOf(k)+1}] `:reg.style==='vancouver'?`${reg.order.indexOf(k)+1}. `:'',segs:formatRef(k,reg.style)}));
+}
+const segText=s=>s.map(x=>typeof x==='string'?x:x.t).join('');
+const segHTML=s=>s.map(x=>typeof x==='string'?esc(x):`<i>${esc(x.t)}</i>`).join('');
+function softwareCitation(style){ return segText(formatRef('sanasoft',style||S.exp.style)); }
+function citeBox(){
+  return `<div class="citebox"><div class="solhead"><b>How to cite SaNaSoft</b><label class="field" style="flex-direction:row;align-items:center;gap:8px">Style<select class="inp" id="cite-style" style="width:auto">${REF_STYLES.map(([k,l])=>`<option value="${k}" ${S.exp.style===k?'selected':''}>${l}</option>`).join('')}</select></label></div>
+    <p class="citetext">${segHTML(formatRef('sanasoft',S.exp.style))}</p><button class="btn small" id="cite-copy">Copy citation</button></div>`;
+}
+function bindCiteBox(){
+  const cs=$('#cite-style'); if(cs) cs.onchange=e=>{ S.exp.style=e.target.value; render(); };
+  const cc=$('#cite-copy'); if(cc) cc.onclick=()=>copyText(softwareCitation(),'Citation');
+}
+
+// ---------- projects: save, open, autosave ----------
+const AUTOKEY='sanasoft:autosave:v1';
+let _dl=null, _autoT=null;
+function projectObj(){
+  return {app:'SaNaSoft', version:1, savedAt:new Date().toISOString(), fileName:S.fileName, mode:S.mode, rows:S.rows0,
+    constructs:S.constructs, higher:S.higher, reverse:S.reverse, scaleMin:S.scaleMin, scaleMax:S.scaleMax,
+    calib:S.calib, calibSrc:S.calibSrc, calStd:S.calStd, fix05:S.fix05, esa:S.esa, roles:S.roles, arrows:S.arrows,
+    outcome:S.outcome, negate:S.negate, conditions:S.conditions, planName:S.planName, freq:S.freq, freqAuto:S.freqAuto,
+    incl:S.incl, pri:S.pri, overrides:S.overrides, dirExp:S.dirExp, modelChoice:S.modelChoice, exp:S.exp, step:S.step, counters:S.counters};
+}
+function openProject(o){
+  if(!o||o.app!=='SaNaSoft'||!Array.isArray(o.rows)){ toast('That is not a SaNaSoft project file'); return; }
+  S.mode=o.mode||'std'; loadRows(o.rows,o.fileName||'project');
+  if(!S.raw){ toast('The project’s data could not be read'); render(); return; }
+  Object.assign(S,{constructs:o.constructs||S.constructs, higher:o.higher||[], reverse:o.reverse||'', scaleMin:o.scaleMin??S.scaleMin, scaleMax:o.scaleMax??S.scaleMax});
+  S.calib=o.calib||{}; S.calibSrc=o.calibSrc||{};
+  computeScores();
+  Object.assign(S,{calStd:o.calStd||'fsqca', fix05:o.fix05!==false, esa:o.esa!==false, roles:o.roles||{}, arrows:o.arrows||{},
+    outcome:o.outcome||null, negate:!!o.negate, conditions:(o.conditions||[]).filter(c=>S.scores[c]), planName:o.planName||'',
+    freq:o.freq||3, freqAuto:o.freqAuto!==false, incl:o.incl??0.8, pri:o.pri??0.7, overrides:o.overrides||{}, dirExp:o.dirExp||{},
+    modelChoice:o.modelChoice||{}, exp:Object.assign(S.exp,o.exp||{}), step:o.step||0, robust:null, predict:null, autosaved:null});
+  const oc=o.counters||{}; Object.keys(oc).forEach(k=>{ S.counters[k]=Math.max(S.counters[k]||0,oc[k]||0); }); try{ localStorage.setItem(COUNTKEY,JSON.stringify(S.counters)); }catch(e){}
+  render(); toast('Project opened');
+}
+function scheduleAutosave(){
+  if(!S.raw) return; clearTimeout(_autoT);
+  _autoT=setTimeout(()=>{ try{ localStorage.setItem(AUTOKEY, JSON.stringify(projectObj())); }catch(e){} },700);
+}
+function baseName(){ return (S.fileName||'sanasoft').replace(/\.[^.]+$/,'').replace(/[^\w\-]+/g,'_'); }
+async function saveFile(filename,data){
+  if(_dl){
+    try{ const r=await _dl.save({filename,data}); if(r&&r.status==='saved') toast('Saved '+filename); return true; }
+    catch(e){ const c=e&&e.code; toast(c==='declined'?'Download cancelled':c==='rate_limited'?'Please wait a moment, then try again':c==='extension_not_enabled'?'This file type can’t be downloaded here':'Download isn’t available in this view'); }
+    return false;
+  }
+  try{ const blob=data instanceof Blob?data:new Blob([data]); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1500); toast('Saved '+filename); return true; }
+  catch(e){ toast('Download isn’t available in this view'); return false; }
+}
+// Numbered file names: SaNaSoft_<n>_<Kind>_<details>.<ext>; each kind keeps its own running number
+const COUNTKEY='sanasoft:filecounters:v1';
+function loadCounters(){ try{ return JSON.parse(localStorage.getItem(COUNTKEY))||{}; }catch(e){ return {}; } }
+S.counters=loadCounters();
+async function saveNumbered(kind,details,ext,data){
+  const n=(S.counters[kind]||0)+1, name=`SaNaSoft_${n}_${kind}_${details}.${ext}`;
+  const ok=await saveFile(name,data);
+  if(ok){ S.counters[kind]=n; try{ localStorage.setItem(COUNTKEY,JSON.stringify(S.counters)); }catch(e){} scheduleAutosave(); }
+  return ok;
+}
+function saveProject(){ if(!S.raw) return; saveNumbered('Project',baseName(),'sanasoft.json',JSON.stringify(projectObj())); }
+
+// ---------- shared result extraction ----------
+const apa=v=>Number.isFinite(v)?v.toFixed(3).replace(/^(-?)0\./,'$1.'):'–';
+const apa2=v=>Number.isFinite(v)?v.toFixed(2).replace(/^(-?)0\./,'$1.'):'–';
+const apaTxt=t=>t.replace(/(^|[\s(=])0\.(\d)/g,'$1.$2');
+function resultPack(){
+  const L=window._last; if(!L) return null;
+  const {d,res}=L, I=res.inter, tt=truthTable(d.conds,d.Y), map={};
+  tt.rows.forEach(r=>{ map[r.idx]= r.n<S.freq?null:(r.idx in S.overrides?S.overrides[r.idx]:(r.incl>=S.incl&&r.pri>=S.pri?1:0)); });
+  const ex=(window._esa&&window._esa.excluded)||new Set();
+  const nec=d.names.flatMap((n,j)=>[{c:n,...necessity(d.conds[j],d.Y)},{c:'~'+n,...necessity(d.conds[j].map(v=>1-v),d.Y)}]);
+  const rows=tt.rows.filter(r=>r.n>0).sort((a,b)=>b.n-a.n);
+  const Sm=d.Y.map((_,i)=>Math.max(...I.terms.map(t=>termMembership(t.term,d.conds)[i])));
+  return {d,res,I,tt,map,ex,nec,rows,Sm,outPlain:d.plainOut};
+}
+function anchorBasis(v){ return ({pct:'95th / 50th / 5th percentiles',pct90:'90th / 50th / 10th percentiles',scale:'Scale points',custom:'Researcher-specified'})[S.calibSrc[v]]||'Researcher-specified'; }
+function plainSentences(P){
+  const {d,I}=P; const out=I.terms.map((t,i)=>{ const parts=termPlain(t.term,d.names); return `Recipe ${i+1}: ${lst(parts)} ${parts.length>1?'together lead':'leads'} to ${d.plainOut}. Its reliability is ${f2(t.incl)} and it accounts for about ${pc(t.cov)} of ${d.plainOut}.`; });
+  out.push(`${I.terms.length>1?`Together, the ${I.terms.length} recipes account`:'The recipe accounts'} for about ${pc(I.sol.cov)} of ${d.plainOut}, with overall reliability ${f2(I.sol.incl)}.`);
+  return out;
+}
+
+// ---------- Excel workbook ----------
+function buildWorkbook(){
+  const P=resultPack(); if(!P||!window.XLSX) return null;
+  const {d,res,I,rows,map,ex,nec}=P, XL=window.XLSX, wb=XL.utils.book_new();
+  const add=(name,aoa,widths)=>{ const ws=XL.utils.aoa_to_sheet(aoa); if(widths) ws['!cols']=widths.map(w=>({wch:w})); XL.utils.book_append_sheet(wb,ws,name); };
+  const r3=v=>Number.isFinite(v)?Math.round(v*1000)/1000:'';
+  add('Settings',[['SaNaSoft fsQCA results'],['Software',`SaNaSoft ${APP_VERSION}, developed by ${DEVELOPERS}`],['How to cite SaNaSoft',softwareCitation()],[],['Analysis',S.planName||'Custom analysis'],['Outcome',d.out],['Conditions',d.names.join(', ')],['Respondents',d.N],['Input',S.mode==='std'?'Standardised latent variable scores':'Unstandardised scores / raw items'],
+    ['Calibration formula',S.calStd==='r'?'R QCA (0.95)':'fsQCA 4.x (0.953)'],['0.5 recoded to 0.501',S.fix05?'Yes':'No'],['Frequency threshold',S.freq],['Raw consistency threshold',S.incl],['PRI threshold',S.pri],['Enhanced Standard Analysis',S.esa?'Yes':'No'],[],
+    ['Variable','Full membership','Crossover','Full non-membership','Basis'],...[...d.names,S.outcome].map(v=>[v,S.calib[v].full,S.calib[v].cross,S.calib[v].non,anchorBasis(v)])],[28,18,12,20,30]);
+  const cal=Object.fromEntries([...d.names,S.outcome].map(v=>[v,calibrated(v)]));
+  add('Calibrated data',[['Row',...[...d.names,S.outcome].flatMap(v=>[v+' score',v+' membership'])],...d.idx.map(i=>[i+1,...[...d.names,S.outcome].flatMap(v=>[r3(S.scores[v][i]),r3(cal[v][i])])])]);
+  add('Necessity',[['Condition','Consistency','Coverage','RoN','Necessary (cons >= .90, RoN >= .50)'],...nec.map(n=>[n.c,r3(n.cons),r3(n.cov),r3(n.ron),n.cons>=0.9&&n.ron>=0.5?'Yes':'No'])],[14,12,12,10,34]);
+  add('Truth table',[[...d.names,'n','Raw consistency','PRI',`OUT (${d.out})`],...rows.map(r=>[...r.str.split('').map(Number),r.n,r3(r.incl),r3(r.pri),map[r.idx]===null?(ex.has(r.str)?'remainder (excluded by ESA)':'remainder'):map[r.idx]])]);
+  const solRows=(title,s)=>[[title],['Configuration','Raw coverage','Unique coverage','Consistency'],...s.terms.map(t=>[termLabel(t.term,d.names),r3(t.cov),r3(t.ucov),r3(t.incl)]),['Solution coverage',r3(s.sol.cov)],['Solution consistency',r3(s.sol.incl)],[]];
+  add('Solutions',[...solRows('Intermediate solution',I),...solRows('Parsimonious solution',res.pars),...solRows('Complex solution',res.complex)],[40,14,16,14]);
+  const sym=(c,core)=>c==='1'?(core?'●':'•'):c==='0'?(core?'⨂':'⊗'):'';
+  add('Configuration chart',[['Condition',...I.terms.map((_,i)=>'Configuration '+(i+1))],...d.names.map((n,j)=>[n,...I.terms.map(t=>sym(t.term[j],I.core.get(t.term).has(j)))]),
+    ['Consistency',...I.terms.map(t=>r3(t.incl))],['Raw coverage',...I.terms.map(t=>r3(t.cov))],['Unique coverage',...I.terms.map(t=>r3(t.ucov))],['Solution consistency',r3(I.sol.incl)],['Solution coverage',r3(I.sol.cov)],[],
+    ['● core condition present; • peripheral condition present; ⨂ core condition absent; ⊗ peripheral condition absent; blank: does not matter.']],[22,...I.terms.map(()=>18)]);
+  add('Cases',[['Configuration','Follow it and show the outcome (row numbers)','Follow it but do not (row numbers)'],...I.terms.map((t,i)=>{ const g=caseGroups(d,t.term); return [termLabel(t.term,d.names),g.typ.join(', '),g.dev.join(', ')]; })],[30,60,60]);
+  if(S.robust) add('Robustness',[['Specification','Solution','Consistency','Coverage','Same as main'],...S.robust.map(r=>[r.label,r.recipes.join(' + ')||'none',r3(r.incl),r3(r.cov),r.same?'Yes':'No'])],[46,40,12,12,12]);
+  if(S.predict&&!S.predict.none) add('Predictive validity',[[`Subsample A n = ${S.predict.nA}; holdout B n = ${S.predict.nB}`],['Configuration (from A)','Consistency in B','Coverage in B'],...S.predict.per.map(p=>[p.label,r3(p.incl),r3(p.cov)]),['All configurations',r3(S.predict.sol.incl),r3(S.predict.sol.cov)]],[36,16,16]);
+  return XL.write(wb,{bookType:'xlsx',type:'array'});
+}
+
+// ---------- figures for Word ----------
+function xySvgStandalone(M,Y,xLab,yLab){
+  const W=600,H=520,L=70,B=62,T=20,R=20, X=x=>L+x*(W-L-R), Yp=y=>T+(1-y)*(H-T-B);
+  const pts=M.map((m,i)=>`<circle cx="${X(m).toFixed(1)}" cy="${Yp(Y[i]).toFixed(1)}" r="3.6" fill="${m>0.5&&Y[i]>0.5?'#000':m>0.5?'#fff':'#9a9a9a'}" stroke="${m>0.5?'#000':'none'}" stroke-width="1.1" fill-opacity="${m>0.5?1:0.55}"/>`).join('');
+  const tk=[0,.2,.4,.6,.8,1].map(v=>`<line x1="${X(v)}" y1="${Yp(0)}" x2="${X(v)}" y2="${Yp(0)+6}" stroke="#000"/><text x="${X(v)}" y="${Yp(0)+24}" font-size="17" text-anchor="middle">${v===0?'0':v===1?'1':'.'+Math.round(v*10)}</text><line x1="${L-6}" y1="${Yp(v)}" x2="${L}" y2="${Yp(v)}" stroke="#000"/><text x="${L-12}" y="${Yp(v)+6}" font-size="17" text-anchor="end">${v===0?'0':v===1?'1':'.'+Math.round(v*10)}</text>`).join('');
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="Arial, Helvetica, sans-serif"><rect width="${W}" height="${H}" fill="#fff"/>
+    <line x1="${X(0)}" y1="${Yp(0)}" x2="${X(1)}" y2="${Yp(1)}" stroke="#000" stroke-dasharray="6 5" stroke-width="1.2"/>
+    <line x1="${X(.5)}" y1="${T}" x2="${X(.5)}" y2="${Yp(0)}" stroke="#bdbdbd"/><line x1="${L}" y1="${Yp(.5)}" x2="${X(1)}" y2="${Yp(.5)}" stroke="#bdbdbd"/>
+    ${pts}<line x1="${L}" y1="${Yp(0)}" x2="${X(1)}" y2="${Yp(0)}" stroke="#000" stroke-width="1.4"/><line x1="${L}" y1="${T}" x2="${L}" y2="${Yp(0)}" stroke="#000" stroke-width="1.4"/>${tk}
+    <text x="${(W+L)/2}" y="${H-12}" font-size="18" text-anchor="middle">${esc(xLab)}</text>
+    <text x="20" y="${(H-B+T)/2}" font-size="18" text-anchor="middle" transform="rotate(-90 20 ${(H-B+T)/2})">${esc(yLab)}</text></svg>`;
+}
+function svgToPng(svg,w,h){
+  return new Promise((res,rej)=>{ const img=new Image(); img.onload=()=>{ const c=document.createElement('canvas'); c.width=w*2; c.height=h*2; const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); g.drawImage(img,0,0,c.width,c.height); c.toBlob(b=>b?b.arrayBuffer().then(res):rej(new Error('png')),'image/png'); }; img.onerror=rej; img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg); });
+}
+function loadScript(src){ return new Promise((res,rej)=>{ const sc=document.createElement('script'); sc.src=src; sc.onload=res; sc.onerror=rej; document.head.appendChild(sc); }); }
+async function getDocx(){ if(!window.docx) await loadScript('https://cdn.jsdelivr.net/npm/docx@9.7.2/dist/index.iife.js'); return window.docx; }
+
+// ---------- Word report, APA 7 ----------
+async function buildDocx(){
+  const P=resultPack(); if(!P) return null;
+  const D=await getDocx(); const {d,res,I,rows,map,ex,nec,Sm}=P, inc=S.exp.inc; const reg=citeRegistry(S.exp.style);
+  const font={tnr:['Times New Roman',24],calibri:['Calibri',22],arial:['Arial',22]}[S.exp.font]||['Times New Roman',24];
+  const page=S.exp.size==='a4'?{width:11906,height:16838}:{width:12240,height:15840};
+  const TW=page.width-2880;
+  const NONE={style:D.BorderStyle.NONE,size:0,color:'FFFFFF'}, LINE={style:D.BorderStyle.SINGLE,size:6,color:'000000'};
+  const body=(t,o={})=>new D.Paragraph({spacing:{line:480,before:0,after:0},indent:o.noIndent?undefined:{firstLine:720},alignment:o.align,children:(Array.isArray(t)?t:[new D.TextRun(t)])});
+  const h1=t=>new D.Paragraph({alignment:D.AlignmentType.CENTER,spacing:{line:480,before:240,after:0},children:[new D.TextRun({text:t,bold:true})]});
+  const h2=t=>new D.Paragraph({spacing:{line:480,before:120,after:0},children:[new D.TextRun({text:t,bold:true})]});
+  let tno=0, fno=0; const kids=[];
+  function table(title,head,data,note,widths,opts={}){
+    tno++; const sc=TW/widths.reduce((a,b)=>a+b,0); const w=widths.map(x=>Math.floor(x*sc)); w[w.length-1]+=TW-w.reduce((a,b)=>a+b,0);
+    kids.push(new D.Paragraph({keepNext:true,spacing:{line:480,before:240,after:0},children:[new D.TextRun({text:`Table ${tno}`,bold:true})]}));
+    kids.push(new D.Paragraph({keepNext:true,spacing:{line:480,after:0},children:[new D.TextRun({text:title,italics:true})]}));
+    const mk=(cells,{top=false,bottom=false,header=false}={})=>new D.TableRow({tableHeader:header,cantSplit:true,children:cells.map((c,j)=>{
+      const cc=(c&&typeof c==='object'&&!Array.isArray(c)&&Object.prototype.hasOwnProperty.call(c,'v'))?c:{v:c}; const runs=Array.isArray(cc.v)?cc.v:[new D.TextRun({text:String(cc.v??'')})];
+      const width=cc.span?w.slice(j,j+cc.span).reduce((a,b)=>a+b,0):w[j];
+      return new D.TableCell({columnSpan:cc.span,width:{size:width,type:D.WidthType.DXA},borders:{top:top?LINE:NONE,bottom:bottom?LINE:NONE,left:NONE,right:NONE},margins:{top:40,bottom:40,left:90,right:90},verticalAlign:D.VerticalAlign.CENTER,
+        children:[new D.Paragraph({keepNext:true,alignment:j===0&&!opts.centerFirst?D.AlignmentType.LEFT:D.AlignmentType.CENTER,spacing:{line:240,before:0,after:0},children:runs})]}); })});
+    const trs=[mk(head.map(x=>x),{top:true,bottom:true,header:true}),...data.map((r,i)=>mk(r,{bottom:i===data.length-1}))];
+    kids.push(new D.Table({width:{size:TW,type:D.WidthType.DXA},columnWidths:w,borders:{top:NONE,bottom:NONE,left:NONE,right:NONE,insideHorizontal:NONE,insideVertical:NONE},rows:trs}));
+    if(note) kids.push(new D.Paragraph({spacing:{line:240,before:80,after:240},children:[new D.TextRun({text:'Note. ',italics:true}),new D.TextRun(note)]}));
+    else kids.push(new D.Paragraph({spacing:{after:240},children:[]}));
+  }
+  async function figure(title,svg,note,wpx,hpx){
+    fno++; const png=await svgToPng(svg,wpx,hpx); const wIn=Math.min(5.2,TW/1440), hIn=wIn*hpx/wpx;
+    kids.push(new D.Paragraph({keepNext:true,spacing:{line:480,before:240,after:0},children:[new D.TextRun({text:`Figure ${fno}`,bold:true})]}));
+    kids.push(new D.Paragraph({keepNext:true,spacing:{line:480,after:0},children:[new D.TextRun({text:title,italics:true})]}));
+    kids.push(new D.Paragraph({keepNext:true,alignment:D.AlignmentType.CENTER,children:[new D.ImageRun({type:'png',data:png,transformation:{width:Math.round(wIn*96),height:Math.round(hIn*96)},altText:{title:title,description:title,name:'figure'+fno}})]}));
+    if(note) kids.push(new D.Paragraph({spacing:{line:240,before:80,after:240},children:[new D.TextRun({text:'Note. ',italics:true}),new D.TextRun(note)]}));
+  }
+  const outTitle=(S.negate?'Low ':'High ')+S.outcome;
+  kids.push(new D.Paragraph({alignment:D.AlignmentType.CENTER,spacing:{line:480,after:0},children:[new D.TextRun({text:`Fuzzy-Set Qualitative Comparative Analysis of ${outTitle}`,bold:true})]}));
+  kids.push(new D.Paragraph({alignment:D.AlignmentType.CENTER,spacing:{line:480,after:240},children:[new D.TextRun({text:`Results generated with SaNaSoft ${APP_VERSION} ${reg('sanasoft')} on ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}`,italics:true})]}));
+  if(inc.methods){ kids.push(h1('Method')); kids.push(h2('Fuzzy-Set Qualitative Comparative Analysis')); kids.push(body(apaTxt(methodsText(d,res,d.names.map(dirFor),truthTable(d.conds,d.Y),null,reg)))); }
+  kids.push(h1('Results'));
+  const necOK=nec.filter(n=>n.cons>=0.9&&n.ron>=0.5);
+  kids.push(body(necOK.length?`${lst(necOK.map(n=>n.c))} passed the test of necessity for ${d.out} (consistency ≥ .90, relevance ≥ .50).`:`No condition was necessary for ${d.out}: all necessity consistencies were below .90.`));
+  kids.push(body(`The intermediate solution for ${d.out} comprised ${I.terms.length} configuration${I.terms.length===1?'':'s'} (solution consistency = ${apa(I.sol.incl)}, solution coverage = ${apa(I.sol.cov)}). `+I.terms.map((t,i)=>`Configuration ${i+1} (${termLabel(t.term,d.names)}) had a consistency of ${apa(t.incl)}, raw coverage of ${apa(t.cov)} and unique coverage of ${apa(t.ucov)}.`).join(' ')));
+  if(inc.calib) table('Calibration Anchors',['Variable','Full membership','Crossover','Full non-membership','Basis'],[...d.names,S.outcome].map(v=>[v,S.calib[v].full,S.calib[v].cross,S.calib[v].non,anchorBasis(v)]),
+    `Anchors correspond to fuzzy membership scores of .95, .50 and .05 (direct method; ${S.calStd==='r'?'R QCA logistic transformation':'Ragin’s logistic transformation as in fsQCA'}).${S.fix05?' Membership scores of exactly .50 were recoded to .501.':''}`,[20,16,14,18,32]);
+  if(inc.nec) table(`Analysis of Necessary Conditions for ${outTitle}`,['Condition','Consistency','Coverage','RoN'],nec.map(n=>[n.c,apa(n.cons),apa(n.cov),apa(n.ron)]),
+    `Tilde (~) denotes the absence of a condition. RoN = relevance of necessity. Conditions with consistency ≥ .90 and RoN ≥ .50 are considered necessary.`,[34,22,22,22]);
+  if(inc.tt) table(`Truth Table for ${outTitle}`,[...d.names,'n','Raw consistency','PRI','Outcome'],rows.map(r=>[...r.str.split(''),r.n,apa(r.incl),apa(r.pri),map[r.idx]===null?'R':String(map[r.idx])]),
+    `1 = condition present (membership > .50); 0 = absent. Rows are sorted by number of cases (n). Outcome coded 1 when raw consistency ≥ ${apa2(S.incl)} and PRI ≥ ${apa2(S.pri)}; R = logical remainder (fewer than ${S.freq} cases).${S.esa&&window._esa&&window._esa.csa.length?` Enhanced Standard Analysis excluded ${window._esa.csa.length} contradictory simplifying assumption${window._esa.csa.length===1?'':'s'}.`:''} Configurations without any cases are omitted.`,
+    [...d.names.map(()=>10),8,15,10,11]);
+  if(inc.conf){
+    const S1=t=>new D.TextRun({text:t,size:30}), S2=t=>new D.TextRun({text:t,size:18});
+    const sy=(c,core)=>c==='1'?(core?S1('●'):S2('●')):c==='0'?(core?S1('⊗'):S2('⊗')):new D.TextRun('');
+    const k=I.terms.length;
+    table(`Configurations Sufficient for ${outTitle}`,['Condition',...I.terms.map((_,i)=>`Configuration ${i+1}`)],
+      [...d.names.map((n,j)=>[n,...I.terms.map(t=>({v:[sy(t.term[j],I.core.get(t.term).has(j))]}))]),
+       ['Consistency',...I.terms.map(t=>apa(t.incl))],['Raw coverage',...I.terms.map(t=>apa(t.cov))],['Unique coverage',...I.terms.map(t=>apa(t.ucov))],
+       ['Solution consistency',{v:apa(I.sol.incl),span:k},...Array(k-1).fill(null)].filter(x=>x!==null),['Solution coverage',{v:apa(I.sol.cov),span:k},...Array(k-1).fill(null)].filter(x=>x!==null)],
+      `Large filled circles (●) indicate core conditions present; small filled circles indicate peripheral conditions present; large crossed circles (⊗) indicate core conditions absent; small crossed circles indicate peripheral conditions absent; blank cells indicate that the condition may be either present or absent ${reg('fiss')}. Intermediate solution; core conditions appear in both the parsimonious and intermediate solutions. Frequency threshold = ${S.freq}; raw consistency threshold = ${apa2(S.incl)}; PRI threshold = ${apa2(S.pri)}.`,
+      [26,...I.terms.map(()=>Math.max(14,60/k))],{});
+  }
+  if(inc.rob&&S.robust) table(`Robustness Checks for ${outTitle}`,['Specification','Solution','Consistency','Coverage','Same'],S.robust.map(r=>[r.label,r.recipes.join(' + ')||'none',apa(r.incl),apa(r.cov),r.same?'Yes':'No']),
+    `Each row reruns the analysis with one setting changed. “Same” indicates an intermediate solution identical to the main analysis.`,[30,24,15,14,9]);
+  if(inc.pred&&S.predict&&!S.predict.none) table(`Predictive Validity of the Configurations for ${outTitle}`,['Configuration (subsample A)','Consistency (holdout B)','Coverage (holdout B)'],[...S.predict.per.map(p=>[p.label,apa(p.incl),apa(p.cov)]),['All configurations',apa(S.predict.sol.incl),apa(S.predict.sol.cov)]],
+    `Configurations were identified in a random half of the sample (n = ${S.predict.nA}) and tested on the other half (n = ${S.predict.nB}), following the subsample and holdout approach ${reg('pappas')}.`,[46,27,27]);
+  if(inc.xy){
+    await figure(`XY Plot of the Solution Against ${outTitle}`,xySvgStandalone(Sm,d.Y,'Membership in the solution',`Membership in ${d.out}`),`Each point is a respondent. Points on or above the diagonal are consistent with sufficiency. Filled points: membership > .50 in both the solution and the outcome; open points: membership > .50 in the solution only. Solution consistency = ${apa(I.sol.incl)}, coverage = ${apa(I.sol.cov)}.`,600,520);
+    for(let i=0;i<Math.min(I.terms.length,4)&&I.terms.length>1;i++){ const t=I.terms[i]; await figure(`XY Plot of Configuration ${i+1} (${termLabel(t.term,d.names)}) Against ${outTitle}`,xySvgStandalone(termMembership(t.term,d.conds),d.Y,`Membership in configuration ${i+1}`,`Membership in ${d.out}`),`Consistency = ${apa(t.incl)}, raw coverage = ${apa(t.cov)}.`,600,520); }
+  }
+  if(inc.plain){ kids.push(h1('Plain-Language Summary')); kids.push(body('For the author’s own use; not intended for publication.',{noIndent:true})); plainSentences(P).forEach(x=>kids.push(body(x))); }
+  kids.push(h1('References'));
+  refList(reg).forEach(r=>kids.push(new D.Paragraph({spacing:{line:480,after:0},indent:{left:720,hanging:720},children:[...(r.prefix?[new D.TextRun(r.prefix)]:[]),...r.segs.map(x=>typeof x==='string'?new D.TextRun(x):new D.TextRun({text:x.t,italics:true}))]})));
+  kids.push(new D.Paragraph({spacing:{line:240,before:360,after:0},children:[new D.TextRun({text:`SaNaSoft was developed by ${DEVELOPERS}.`,italics:true,size:18})]}));
+  const doc=new D.Document({creator:'SaNaSoft',title:`fsQCA results: ${d.out}`,styles:{default:{document:{run:{font:font[0],size:font[1]}}}},
+    sections:[{properties:{page:{size:page,margin:{top:1440,right:1440,bottom:1440,left:1440}}},
+      headers:{default:new D.Header({children:[new D.Paragraph({alignment:D.AlignmentType.RIGHT,children:[new D.TextRun({children:[D.PageNumber.CURRENT]})]})]})},children:kids}]});
+  return D.Packer.toBlob(doc);
+}
+function exportBox(){
+  const e=S.exp, c=(k,l,dis)=>`<label class="chip small ${e.inc[k]&&!dis?'on':''} ${dis?'dis':''}"><input type="checkbox" data-inc-exp="${k}" ${e.inc[k]&&!dis?'checked':''} ${dis?'disabled':''}>${l}</label>`;
+  return `<div class="subblock"><div class="sub">Download your results</div>
+    <p class="note">Choose a reference style for the citations and reference list. Tables and figures follow APA 7th edition style: numbered tables and figures with italic titles, horizontal rules only, notes below each table, and no leading zeros for proportions. Tables open as real Word tables you can edit.</p>
+    <div class="fields"><label class="field">Paper size<select class="inp" id="xp-size" style="width:auto"><option value="letter" ${e.size==='letter'?'selected':''}>US Letter</option><option value="a4" ${e.size==='a4'?'selected':''}>A4</option></select></label>
+    <label class="field">Reference style<select class="inp" id="xp-ref" style="width:auto">${REF_STYLES.map(([k,l])=>`<option value="${k}" ${e.style===k?'selected':''}>${l}</option>`).join('')}</select></label>
+    <label class="field">Font<select class="inp" id="xp-font" style="width:auto"><option value="tnr" ${e.font==='tnr'?'selected':''}>Times New Roman 12 pt</option><option value="calibri" ${e.font==='calibri'?'selected':''}>Calibri 11 pt</option><option value="arial" ${e.font==='arial'?'selected':''}>Arial 11 pt</option></select></label></div>
+    <div class="exportgrid">${c('methods','Methods paragraph')}${c('calib','Calibration table')}${c('nec','Must-have table')}${c('tt','Combination table')}${c('conf','Recipe table')}${c('rob','Robustness table',!S.robust)}${c('pred','Predictive table',!S.predict||S.predict.none)}${c('xy','XY plots')}${c('plain','Plain-language summary')}</div>
+    ${!S.robust||!S.predict?'<p class="note">Run the robustness check and the predictive test above to include their tables.</p>':''}
+    <div class="row"><button class="btn primary small" id="dl-word">Download Word report (APA 7)</button><button class="btn small" id="dl-xlsx">Download Excel workbook</button><button class="btn small" id="dl-proj">Save project</button></div></div>`;
+}
+function bindExport(){
+  const sz=$('#xp-size'); if(!sz) return;
+  sz.onchange=e=>{ S.exp.size=e.target.value; scheduleAutosave(); };
+  $('#xp-font').onchange=e=>{ S.exp.font=e.target.value; scheduleAutosave(); };
+  $('#xp-ref').onchange=e=>{ S.exp.style=e.target.value; render(); };
+  $$('[data-inc-exp]').forEach(el=>el.onchange=()=>{ S.exp.inc[el.dataset.incExp]=el.checked; el.closest('label').classList.toggle('on',el.checked); scheduleAutosave(); });
+  $('#dl-word').onclick=async e=>{ const b=e.currentTarget; b.disabled=true; b.textContent='Preparing Word report…';
+    try{ const blob=await buildDocx(); if(blob) await saveNumbered('Report',`${baseName()}_${S.negate?'low':'high'}_${S.outcome}`,'docx',blob); }
+    catch(err){ toast('Could not build the Word report. Check your internet connection and try again.'); console.error(err); }
+    b.disabled=false; b.textContent='Download Word report (APA 7)'; };
+  $('#dl-xlsx').onclick=async()=>{ if(!window.XLSX){ toast('The Excel library could not load. Check your internet connection.'); return; } const buf=buildWorkbook(); if(buf) await saveNumbered('Results',`${baseName()}_${S.negate?'low':'high'}_${S.outcome}`,'xlsx',new Blob([buf])); };
+  $('#dl-proj').onclick=saveProject;
+}
+
+function nextButtons(){
+  const ps=plans(); if(!ps.length) return '';
+  const items=[];
+  ps.forEach((p,i)=>{ [false,true].forEach(neg=>{
+    const same=p.result===S.outcome && neg===S.negate && p.factors.join()===S.conditions.join();
+    if(!same && p.factors.length>=1 && p.factors.length<=10) items.push(`<button class="btn small" data-np="${i}" data-neg="${neg?1:0}">What leads to ${neg?'low':'high'} ${esc(p.result)}${p.kind==='whole'?' (whole model)':''}</button>`);
+  }); });
+  return items.length?`<div class="subblock"><div class="sub">Run your other analyses</div><p class="note">Your settings carry over. Each button runs straight through to the recipes; check steps 5 and 6 for each one too.</p><div class="row">${items.join('')}</div></div>`:'';
+}
+function bindNext(){ const ps=plans(); $$('[data-np]').forEach(b=>b.onclick=()=>startPlan(ps[+b.dataset.np], b.dataset.neg==='1', 6)); }
+function symbol(c,core){
+  const s=core?20:12;
+  if(c==='1') return `<svg class="sym" width="${s}" height="${s}" viewBox="0 0 20 20" aria-label="high"><circle cx="10" cy="10" r="9" fill="var(--in)"/></svg>`;
+  if(c==='0') return `<svg class="sym" width="${s}" height="${s}" viewBox="0 0 20 20" aria-label="low"><circle cx="10" cy="10" r="8" fill="none" stroke="var(--out)" stroke-width="2.2"/><path d="M5.8 5.8L14.2 14.2M14.2 5.8L5.8 14.2" stroke="var(--out)" stroke-width="2.2"/></svg>`;
+  return '';
+}
+function methodsText(d,res,de,tt,map,reg){
+  reg=reg||citeRegistry(S.exp.style); const citeSw=reg('sanasoft');
+  const vs=[...d.names,S.outcome];
+  const src=v=>S.calibSrc[v]||'custom';
+  const pctV=vs.filter(v=>src(v)==='pct'), p90V=vs.filter(v=>src(v)==='pct90'), custV=vs.filter(v=>src(v)==='custom'), scaleV=vs.filter(v=>src(v)==='scale');
+  const all=S.mode==='std'?'Because the latent variable scores were standardised, all constructs':'All constructs';
+  let calTxt=''; const std=S.calStd==='r'?' (logistic transformation as implemented in the R QCA package, with full membership at 0.95)':' '+reg('ragin');
+  if(scaleV.length){ const a=S.calib[scaleV[0]]; calTxt+=`${scaleV.length===vs.length?'All constructs were':lst(scaleV)+(scaleV.length>1?' were':' was')} calibrated using the direct method${std}, with ${a.full} as the threshold for full membership, ${a.cross} as the crossover point and ${a.non} as the threshold for full non-membership on the original ${S.scaleMin}–${S.scaleMax} scale. `; }
+  if(pctV.length) calTxt+=`${pctV.length===vs.length?all:lst(pctV)} were calibrated using the direct method${std} with the 95th, 50th and 5th sample percentiles as thresholds for full membership, the crossover point and full non-membership. `;
+  if(p90V.length) calTxt+=`${p90V.length===vs.length?all:lst(p90V)} ${p90V.length>1?'were':'was'} calibrated using the direct method${std} with the 90th, 50th and 10th sample percentiles as thresholds for full membership, the crossover point and full non-membership. `;
+  if(custV.length) calTxt+=`${lst(custV)} ${custV.length>1?'were':'was'} calibrated using the direct method with construct-specific anchors (see Table X). `;
+  const kept=tt.rows.filter(r=>r.n>=S.freq).reduce((s,r)=>s+r.n,0), tot=d.N-tt.ambiguous;
+  const pres=d.names.filter((_,j)=>de[j]==='1'), abs=d.names.filter((_,j)=>de[j]==='0');
+  const ex=[]; if(pres.length) ex.push(`${lst(pres)} would contribute to ${d.out} when present`); if(abs.length) ex.push(`${lst(abs)} would contribute when absent`);
+  const I=res.inter;
+  const multi=vs.some(v=>{ const c=S.constructs.find(x=>x.name===v); return (c&&c.items.length>1)||S.higher.some(h=>h.name===v); });
+  const src0= S.mode==='std'?'using the latent variable scores from the PLS-SEM model as construct scores. ': multi?`with construct scores computed as the mean of their items on the original ${S.scaleMin}–${S.scaleMax} scale. `:'using the unstandardised latent variable scores from the PLS-SEM model as construct scores. ';
+  return `We conducted fsQCA on ${d.N} respondents in SaNaSoft ${citeSw}, ` + src0 + calTxt +
+    (S.fix05?`Membership scores of exactly 0.5 were recoded to 0.501 to avoid dropping cases at the crossover. `:'') +
+    `The truth table for ${d.out} included ${d.names.length} conditions (${lst(d.names)}). Using a frequency threshold of ${S.freq}, which retained ${pc(kept/tot)} of cases, a raw consistency threshold of ${S.incl.toFixed(2)} and a PRI threshold of ${S.pri.toFixed(2)}, ${res.nPos} configuration${res.nPos===1?' was':'s were'} coded as sufficient. ` +
+    (S.esa?`Following the Enhanced Standard Analysis ${reg('schneider')}, ${(()=>{ const a=(window._esa&&window._esa.csa.length)||0, b=window._esa?window._esa.necRows.filter(x=>!window._esa.csa.includes(x)).length:0; return `contradictory simplifying assumptions (${a}) and remainders contradicting a necessary condition (${b}) were excluded from the minimisation. `; })()}`:'') +
+    (res.complex.nModels>1||res.pars.nModels>1?`Model ambiguity was present (${res.complex.nModels} complex and ${res.pars.nModels}${res.pars.capped?'+':''} parsimonious models); the reported intermediate solution is based on complex model ${res.complex.idx+1} and parsimonious model ${res.pars.idx+1}. `:'') +
+    `The intermediate solution` + (ex.length?`, based on the directional expectations that ${ex.join(' and ')},`:'') +
+    ` comprises ${I.terms.length} configuration${I.terms.length===1?'':'s'} with an overall solution consistency of ${f3(I.sol.incl)} and solution coverage of ${f3(I.sol.cov)}.`;
+}
+function drawCurve(){
+  const box=$('#curve'); if(!box) return;
+  const v=S.selCal; if(!v||!S.scores[v]){ box.innerHTML=''; return; }
+  const a=S.calib[v], ok=validAnchors(a), sc=S.scores[v].filter(Number.isFinite);
+  const W=640,H=250,L=44,R=16,T=18,B=38;
+  const lo=S.std[v]?Math.floor(Math.min(...sc, ok?Math.min(a.non,a.full):Infinity)):Math.min(S.scaleMin,Math.floor(Math.min(...sc))), hi=S.std[v]?Math.ceil(Math.max(...sc, ok?Math.max(a.non,a.full):-Infinity)):Math.max(S.scaleMax,Math.ceil(Math.max(...sc)));
+  const X=x=>L+(x-lo)/(hi-lo)*(W-L-R), Yp=y=>T+(1-y)*(H-T-B);
+  const bins=24, bw=(hi-lo)/bins, cnt=new Array(bins).fill(0);
+  sc.forEach(x=>{ const b=Math.min(bins-1,Math.max(0,Math.floor((x-lo)/bw))); cnt[b]++; });
+  const mx=Math.max(...cnt,1);
+  const hist=cnt.map((c,i)=>`<rect x="${X(lo+i*bw)+1}" y="${Yp(0)-c/mx*(H-T-B)*0.85}" width="${Math.max(1,(W-L-R)/bins-2)}" height="${c/mx*(H-T-B)*0.85}" fill="var(--line)" opacity=".75"/>`).join('');
+  let curve='', marks='';
+  if(ok){
+    const pts=[]; for(let i=0;i<=160;i++){ const x=lo+(hi-lo)*i/160; pts.push(`${X(x).toFixed(1)},${Yp(cv(x,a)).toFixed(1)}`); }
+    curve=`<polyline points="${pts.join(' ')}" fill="none" stroke="var(--in)" stroke-width="3" stroke-linejoin="round"/>`;
+    const mk=(x,y,col,lab)=>`<line x1="${X(x)}" x2="${X(x)}" y1="${T}" y2="${Yp(0)}" stroke="${col}" stroke-dasharray="3 4" stroke-width="1.3"/><circle cx="${X(x)}" cy="${Yp(y)}" r="5" fill="${col}"/><text x="${X(x)+7}" y="${Yp(y)+(y>0.9?16:-8)}" font-size="12.5" fill="${col}" font-family="var(--sans)" font-weight="600">${lab}</text>`;
+    marks=mk(a.non,cv(a.non,a),'var(--out)','Clearly low: '+a.non)+mk(a.cross,0.5,'var(--ink)','Middle: '+a.cross)+mk(a.full,cv(a.full,a),'var(--in)','Clearly high: '+a.full);
+  }
+  const ticks=[]; for(let t=Math.ceil(lo);t<=hi;t++) ticks.push(`<text x="${X(t)}" y="${H-B+18}" font-size="12" text-anchor="middle" fill="var(--muted)" font-family="var(--sans)">${t}</text>`);
+  const yt=[0,.5,1].map(y=>`<text x="${L-8}" y="${Yp(y)+4}" font-size="12" text-anchor="end" fill="var(--muted)" font-family="var(--sans)">${y}</text><line x1="${L}" x2="${W-R}" y1="${Yp(y)}" y2="${Yp(y)}" stroke="var(--line)" stroke-width="1"/>`).join('');
+  const cal=ok?sc.map(x=>cv(x,a)):[];
+  box.innerHTML=`<div class="curvehead"><div class="sub">${esc(v)}: from score to 0–1</div><div class="stats"><span>Median score <b>${f2(percentile(sc,.5))}</b></span>${ok?`<span>In the high group <b>${pc(cal.filter(c=>c>0.5).length/cal.length)}</b></span>`:''}</div></div>
+    ${ok?'':'<div class="callout warn">The three points must run in order: clearly high, then middle, then clearly low.</div>'}
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Conversion curve for ${esc(v)}">${yt}${hist}${curve}${marks}${ticks.join('')}<text x="${(W+L)/2}" y="${H-4}" font-size="12" text-anchor="middle" fill="var(--muted)" font-family="var(--sans)">${S.std[v]?'Standardised score':'Score on your scale'} (grey bars show how your respondents are spread)</text></svg>
+    <p class="note">The blue curve turns each score (along the bottom) into a 0–1 value (up the side).</p>`;
+}
+function renderRail(){
+  const mr=maxReach();
+  $('#rail').innerHTML=STEPS.map((s,i)=>`<button class="stepbtn ${i===S.step?'cur':''} ${i<S.step?'done':''}" data-step="${i}" ${i>mr?'disabled':''}><span class="n">${i+1}</span><span class="t">${s.title}</span></button>`).join('');
+  $$('.stepbtn').forEach(b=>b.onclick=()=>{ S.step=+b.dataset.step; render(); scrollTop(); });
+}
+function scrollTop(){ try{ window.scrollTo({top:0,behavior:'smooth'}); }catch(e){} }
+function nextHint(){
+  const mr=maxReach();
+  if(S.step+1<=mr) return '';
+  if(S.step===2) return 'Start one of the suggested analyses above to continue';
+  if(S.step===3) return 'Fix the highlighted numbers to continue';
+  return '';
+}
+function render(){
+  if(S.step>maxReach()) S.step=maxReach();
+  renderRail();
+  const st=STEPS[S.step], mr=maxReach(), hint=nextHint();
+  $('#main').innerHTML=`<section class="panel"><div class="phead"><div class="pn">Step ${S.step+1} of ${STEPS.length}</div><h2>${st.title}</h2></div>
+    <div class="pgrid"><div class="pcontent">${st.render()}</div><aside class="guide">${st.guide}</aside></div>
+    <div class="pnav">${S.step>0?'<button class="btn ghost" id="back">Back</button>':'<span></span>'}
+    ${S.step<STEPS.length-1?`<div class="navr">${hint?`<span class="note">${hint}</span>`:''}<button class="btn primary" id="next" ${S.step+1>mr?'disabled':''}>Continue to ${STEPS[S.step+1].title.toLowerCase()}</button></div>`:''}</div></section>`;
+  const b=$('#back'); if(b) b.onclick=()=>{ S.step--; render(); scrollTop(); };
+  const n=$('#next'); if(n) n.onclick=()=>{ S.step++; render(); scrollTop(); };
+  st.bind&&st.bind();
+  const sp=$('#saveproj'); sp.hidden=!S.raw; sp.onclick=saveProject;
+  scheduleAutosave();
+}
+$('#modalclose').onclick=()=>$('#modal').classList.remove('show');
+const THEMEKEY='sanasoft:theme';
+function applyTheme(t){ if(t==='auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme',t); }
+(()=>{ let t='light'; try{ t=localStorage.getItem(THEMEKEY)||'light'; }catch(e){} applyTheme(t); const sel=$('#theme'); sel.value=t; sel.onchange=()=>{ applyTheme(sel.value); try{ localStorage.setItem(THEMEKEY,sel.value); }catch(e){} }; })();
+try{ const a=localStorage.getItem(AUTOKEY); if(a){ const o=JSON.parse(a); if(o&&o.app==='SaNaSoft') S.autosaved={savedAt:o.savedAt,fileName:o.fileName}; } }catch(e){}
+render();
+(async()=>{ try{ if(window.claude&&typeof window.claude.use==='function'){ _dl=await window.claude.use('downloads'); } }catch(e){ _dl=null; } })();
+
+</script>
+</body>
+</html>

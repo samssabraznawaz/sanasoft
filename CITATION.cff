@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use SaNaSoft in your research, please cite it as below."
+title: "SaNaSoft: Guided fsQCA for PLS-SEM latent variable scores"
+version: 1.2.0
+date-released: 2026-09-24
+license: MIT
+authors:
+  - family-names: "Samsudeen"
+    given-names: "S. N."
+    alias: "Prof. S. Sabraz Nawaz"
+  - family-names: "Ghazanfar"
+    given-names: "A. A."
+    alias: "Prof. Ghazanfar Ali"
+url: "https://claude.ai/artifact/UZhqVjLjtwhis75rAuUbnS"
+keywords:
+  - fsQCA
+  - qualitative comparative analysis
+  - PLS-SEM
+  - configurational analysis
