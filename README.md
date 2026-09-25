@@ -23,6 +23,17 @@ Its analysis engine has been benchmarked against the R package QCA 3.25.5 on 241
 - Numbered file names that never overwrite earlier downloads: `SaNaSoft_1_Project_<data>.sanasoft.json`, `SaNaSoft_1_Report_<data>_<outcome>.docx`, `SaNaSoft_1_Results_<data>_<outcome>.xlsx`, then 2, 3 and so on for each kind of file
 - Runs entirely in the browser: data never leave the user’s computer
 
+## SaNaSoft-ANN (new)
+
+The repository also contains **SaNaSoft-ANN**, a guided artificial neural network tool for the second stage of the
+PLS-SEM + ANN hybrid approach. It implements the procedure of Leong et al. (2025) — ten networks with 90/10
+partitioning, RMSE tables, R², averaged normalized importance (sensitivity analysis) and the PLS-SEM vs ANN
+comparison — and writes a Word report. It works on the same SmartPLS latent variable scores as SaNaSoft fsQCA.
+
+- Use it online: **https://samssabraznawaz.github.io/sanasoft/ann/**
+- Documentation, methodology and validation: [`ann/README.md`](ann/README.md)
+- Cite as: Samsudeen, S.N. and Ghazanfar, A.A. (2026), “SaNaSoft-ANN: Guided artificial neural network analysis for PLS-SEM latent variable scores”, Version 2.0, available at: https://samssabraznawaz.github.io/sanasoft/ann/
+
 ## Running SaNaSoft
 
 SaNaSoft is available online at **https://samssabraznawaz.github.io/sanasoft/**.

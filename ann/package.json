@@ -1,0 +1,15 @@
+{
+  "name": "sanasoft-ann",
+  "version": "2.0.0",
+  "description": "Guided artificial neural network analysis for PLS-SEM + ANN research (Leong et al., 2025)",
+  "private": true,
+  "license": "MIT",
+  "author": "Prof. S. Sabraz Nawaz and Prof. Ghazanfar Ali",
+  "repository": { "type": "git", "url": "https://github.com/samssabraznawaz/sanasoft.git", "directory": "ann" },
+  "scripts": {
+    "build": "node build.js",
+    "check": "node build.js --check",
+    "test": "node --test tests/engine.test.js"
+  },
+  "engines": { "node": ">=18" }
+}

@@ -1,0 +1,54 @@
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="logo">SaNa<span>Soft</span>-ANN</div>
+    <div class="tagline">Artificial Neural Network Analysis for PLS-SEM Researchers</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-left:auto;flex-wrap:wrap">
+    <button class="hbtn" onclick="openTutorial()">📖 SPSS Tutorial</button>
+    <button class="hbtn" onclick="saveProject()">💾 Save project</button>
+    <button class="hbtn" onclick="document.getElementById('project-input').click()">📂 Open project</button>
+    <input type="file" id="project-input" accept=".json,.sanaann" style="display:none" onchange="loadProject(this.files[0]);this.value=''">
+    <a class="hbtn" href="../" title="SaNaSoft fsQCA — configurational analysis of the same PLS-SEM scores" style="text-decoration:none">🧩 SaNaSoft fsQCA</a>
+    <div class="badge">v2.0 · Prof. S. Sabraz Nawaz &amp; Prof. Ghazanfar Ali</div>
+  </div>
+</header>
+
+<div id="progress-bar"></div>
+
+<div id="main">
+  <div id="sidebar"></div>
+  <div id="content"></div>
+</div>
+
+<!-- ══════════════════════ TUTORIAL MODAL ══════════════════════ -->
+<div id="tutorial-overlay">
+<div id="tutorial-modal">
+  <div class="tut-header">
+    <h2>📖 SPSS → SaNaSoft-ANN Tutorial <span class="tut-badge">Leong et al., 2025</span></h2>
+    <button class="tut-close" onclick="closeTutorial()">✕</button>
+  </div>
+  <div class="tut-nav" id="tut-nav"></div>
+  <div class="tut-body" id="tut-body"></div>
+  <div class="tut-footer">
+    <span class="tut-counter" id="tut-counter">Step 1 of 8</span>
+    <div class="tut-nav-btns">
+      <button class="btn btn-outline btn-sm" id="tut-prev" onclick="tutNav(-1)">← Previous</button>
+      <button class="btn btn-primary btn-sm" id="tut-next" onclick="tutNav(1)">Next →</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════ RUN OVERLAY ══════════════════════ -->
+<div id="run-overlay">
+  <div class="spinner"></div>
+  <div id="run-progress-text">Preparing analysis…</div>
+  <div class="progress-track"><div class="progress-fill" id="run-fill"></div></div>
+  <div id="run-sub"></div>
+  <button class="btn btn-outline btn-sm" style="background:transparent;color:#fff;border-color:rgba(255,255,255,.6)" onclick="cancelRun()">✕ Cancel</button>
+</div>
+
+<script id="engine-src" type="text/plain">
